@@ -68,3 +68,7 @@ Artifact 版由 `build-artifact.py` 從 `index.html` 自動產生（剝掉 `<htm
 ```
 python3 build-artifact.py /tmp/zine-fold-artifact.html
 ```
+
+## 授權
+
+MIT License，見 repo 根目錄的 [LICENSE](../LICENSE)。
