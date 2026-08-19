@@ -55,3 +55,15 @@ A4 橫向 297 × 210 mm，切成 4 欄 × 2 列，每格 74.25 × 105 mm（約 A
 3. 攤開，沿長邊上下對折，讓切口在中間
 4. 抓左右兩端往中間推，切口撐開成十字形
 5. 把四片繞成一疊壓平
+
+## 線上預覽（只能看，不能印）
+
+Artifact：<https://claude.ai/code/artifact/9c72b3dc-c7bf-41ff-857d-8d923bbf2ae6>
+
+嵌入式頁面沒辦法叫出正確的列印對話框，**實際列印一定要用本機的 `imposer.html`**。
+Artifact 版由 `build-artifact.py` 從 `imposer.html` 自動產生（剝掉 `<html>`／`<head>`／`<body>` 外殼），
+所以原始碼只有一份：
+
+```
+python3 build-artifact.py /tmp/zine-imposer-artifact.html
+```
