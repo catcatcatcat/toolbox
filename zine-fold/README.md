@@ -1,4 +1,4 @@
-# zine-imposer — 八折小誌拼版器
+# zine-fold — 八折小誌拼版器
 
 把 8 張頁面圖排進一張 A4 橫向紙上，列印後折三次、剪一刀，就是一本 8 頁小誌（one-sheet zine／八つ折り本）。
 
@@ -7,17 +7,18 @@
 ## 使用方式
 
 ```bash
-open imposer.html
+open index.html
 ```
 
 單一檔案、零相依、零安裝，雙擊用瀏覽器打開即可，離線可用。
+線上版：<https://toolbox.catcatcatcat.cc/zine-fold/>（也可直接把頁面存成 HTML 帶走）。
 圖片全部在瀏覽器本機處理，不會上傳到任何伺服器。
 
 ## 流程
 
 1. 在 Canva／Figma 排好每一頁，各自匯出成圖片，命名 `1.png` ～ `8.png`
    （建議每頁比例接近 A7 直式 74 × 105 mm）
-2. 打開 `imposer.html`，一次選 8 個檔（會依檔名數字排序自動填入）
+2. 打開 `index.html`，一次選 8 個檔（會依檔名數字排序自動填入）
 3. 按「列印 / 存成 PDF」
 4. 列印設定：A4、**橫向**、縮放 **100%（實際大小）**、關閉頁首頁尾、**單面列印**
 
@@ -60,10 +61,10 @@ A4 橫向 297 × 210 mm，切成 4 欄 × 2 列，每格 74.25 × 105 mm（約 A
 
 Artifact：<https://claude.ai/code/artifact/9c72b3dc-c7bf-41ff-857d-8d923bbf2ae6>
 
-嵌入式頁面沒辦法叫出正確的列印對話框，**實際列印一定要用本機的 `imposer.html`**。
-Artifact 版由 `build-artifact.py` 從 `imposer.html` 自動產生（剝掉 `<html>`／`<head>`／`<body>` 外殼），
+嵌入式頁面沒辦法叫出正確的列印對話框，**實際列印一定要用本機的 `index.html`**。
+Artifact 版由 `build-artifact.py` 從 `index.html` 自動產生（剝掉 `<html>`／`<head>`／`<body>` 外殼），
 所以原始碼只有一份：
 
 ```
-python3 build-artifact.py /tmp/zine-imposer-artifact.html
+python3 build-artifact.py /tmp/zine-fold-artifact.html
 ```
