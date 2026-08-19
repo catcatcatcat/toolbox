@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>八折小誌拼版器</title>
+<style>
+  :root {
+    --bg: #f6f6f8;
+    --panel: #fff;
+    --line: #dcdce4;
+    --ink: #1d1d24;
+    --muted: #6a6a7a;
+    --accent: #4f46e5;
+    --danger: #d92d20;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.6 -apple-system, "Hiragino Sans", "PingFang TC", "Noto Sans TC", sans-serif;
+  }
+  header {
+    padding: 20px 24px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  h1 { margin: 0 0 4px; font-size: 20px; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px; }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  h2 { margin: 0 0 14px; font-size: 15px; letter-spacing: .04em; }
+  .hint { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+
+  /* --- page upload slots --- */
+  .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .slot {
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    background: #fafafc;
+  }
+  .slot.filled { border-style: solid; border-color: var(--accent); }
+  .slot .label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .slot .thumb {
+    width: 100%; aspect-ratio: 74.25 / 105;
+    background: #fff center/contain no-repeat;
+    border: 1px solid var(--line); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: #c4c4d0; font-size: 24px; cursor: pointer;
+  }
+  .slot button.clear {
+    margin-top: 6px; font-size: 11px; padding: 2px 8px;
+    border: 1px solid var(--line); border-radius: 4px;
+    background: #fff; color: var(--muted); cursor: pointer;
+  }
+
+  /* --- controls --- */
+  .controls { display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: flex-start; }
+  .field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+  .field > span { color: var(--muted); }
+  select, input[type=number] {
+    font: inherit; font-size: 13px; padding: 5px 8px;
+    border: 1px solid var(--line); border-radius: 6px; background: #fff;
+  }
+  label.check { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; }
+  button.primary {
+    font: inherit; font-weight: 600; padding: 9px 20px;
+    background: var(--accent); color: #fff;
+    border: 0; border-radius: 8px; cursor: pointer;
+  }
+  button.ghost {
+    font: inherit; font-size: 13px; padding: 7px 14px;
+    background: #fff; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+  }
+
+  /* --- imposition sheet (A4 landscape, 297 x 210 mm) --- */
+  #stage { overflow: hidden; }
+  #sheet {
+    position: relative;
+    width: 297mm; height: 210mm;
+    background: #fff;
+    transform: scale(var(--s, 1));
+    transform-origin: top left;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .cell { position: absolute; width: 74.25mm; height: 105mm; overflow: hidden; }
+  .cell .art {
+    position: absolute; inset: var(--inset, 0);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: var(--fit, cover);
+  }
+  .cell.rot .art { transform: rotate(180deg); }
+  .cell .testmark {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4mm; color: #111;
+    font-family: -apple-system, sans-serif;
+  }
+  .cell.rot .testmark { transform: rotate(180deg); }
+  .testmark .num { font-size: 26mm; font-weight: 700; line-height: 1; }
+  .testmark .role { font-size: 5mm; color: #666; }
+  .testmark .up { font-size: 7mm; color: #999; }
+
+  #guides { position: absolute; inset: 0; pointer-events: none; }
+  #guides .fold {
+    position: absolute; background: transparent;
+    border-color: #b9b9c8; border-style: dashed; border-width: 0;
+  }
+  #guides .v { top: 0; height: 210mm; border-left-width: .3mm; }
+  #guides .h { left: 0; width: 297mm; border-top-width: .3mm; }
+  #guides .cut {
+    position: absolute; left: 74.25mm; top: 105mm; width: 148.5mm;
+    border-top: .6mm solid var(--danger);
+  }
+  #guides .cutlabel {
+    position: absolute; left: 120mm; top: 107mm;
+    font-size: 4mm; color: var(--danger);
+  }
+
+  /* --- mapping editor --- */
+  .mapgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 620px; }
+  .mapcell {
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; background: #fafafc; font-size: 12px;
+  }
+  .mapcell .pos { color: var(--muted); margin-bottom: 6px; }
+  .mapcell select { width: 100%; }
+  .mapcell label.check { margin-top: 6px; font-size: 12px; }
+
+  ol.steps { margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; }
+  ol.steps li { margin-bottom: 5px; }
+  ol.steps b { color: var(--ink); }
+
+  @media print {
+    .noprint { display: none !important; }
+    body { background: #fff; }
+    main { padding: 0; max-width: none; }
+    section { border: 0; padding: 0; margin: 0; border-radius: 0; }
+    #stage { overflow: visible; }
+    #sheet { --s: 1 !important; box-shadow: none; }
+    @page { size: A4 landscape; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="noprint">
+  <h1>八折小誌拼版器</h1>
+  <p>把 8 張頁面圖排進一張 A4，折成 8 頁小誌。圖片只在你的瀏覽器裡處理，不會上傳到任何地方。</p>
+</header>
+
+<main>
+
+<section class="noprint">
+  <h2>1 ── 放入 8 張頁面圖</h2>
+  <p class="hint">
+    一次選 8 個檔也可以（會依檔名排序自動填入 1～8，所以建議命名成 <code>1.png</code> ～ <code>8.png</code>）。
+    每頁的原始比例最好接近 A7 直式（74 × 105 mm，約 1:1.414）。
+  </p>
+  <div style="margin-bottom:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <input type="file" id="bulk" accept="image/*" multiple>
+    <button class="ghost" id="clearAll">全部清空</button>
+  </div>
+  <div class="slots" id="slots"></div>
+</section>
+
+<section class="noprint">
+  <h2>2 ── 設定</h2>
+  <div class="controls">
+    <div class="field">
+      <span>模式</span>
+      <select id="mode">
+        <option value="art">拼版（放圖片）</option>
+        <option value="test">測試頁（印編號，用來驗證版型）</option>
+      </select>
+    </div>
+    <div class="field">
+      <span>圖片填滿方式</span>
+      <select id="fit">
+        <option value="cover">填滿裁切（cover）</option>
+        <option value="contain">完整顯示留白（contain）</option>
+      </select>
+    </div>
+    <div class="field">
+      <span>每頁內縮留白（mm）</span>
+      <input type="number" id="inset" min="0" max="15" step="0.5" value="0" style="width:90px">
+    </div>
+    <div class="field">
+      <span>輔助線</span>
+      <label class="check"><input type="checkbox" id="guidesOn" checked> 畫面顯示折線與切線</label>
+      <label class="check"><input type="checkbox" id="guidesPrint"> 列印時也印出輔助線</label>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="noprint">3 ── 拼版預覽（A4 橫向）</h2>
+  <p class="hint noprint">
+    紅線 = 要剪的那一刀（只剪中央兩格的長度，不要剪穿整張紙）。灰虛線 = 折線。
+  </p>
+  <div id="stage"><div id="sheet"><div id="guides"></div></div></div>
+  <div class="noprint" style="margin-top:16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <button class="primary" id="print">列印 / 存成 PDF</button>
+    <span class="hint" style="margin:0">
+      列印對話框請設定：紙張 A4、方向<b>橫向</b>、縮放<b>實際大小 100%</b>、關閉頁首頁尾、<b>單面列印</b>。
+    </span>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2>4 ── 版型對照表（折法不同就改這裡）</h2>
+  <p class="hint">
+    八折本的折法有鏡像變體，網路上的版型不一定合你的折法。<b>先用「測試頁」模式印一張、折起來看</b>：
+    如果翻頁順序是 1→2→3…→8 且每頁都正立，版型就對了；不對就在下面調整，設定會自動記住。
+  </p>
+  <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+    <button class="ghost" data-preset="A">套用預設 A：下排 6·7·8·封面</button>
+    <button class="ghost" data-preset="B">套用預設 B：下排 封面·8·7·6（鏡像）</button>
+  </div>
+  <div class="mapgrid" id="mapgrid"></div>
+</section>
+
+<section class="noprint">
+  <h2>折法備忘</h2>
+  <ol class="steps">
+    <li>A4 <b>橫放</b>，左右對折 → 再左右對折 → 再上下對折，攤開得到 8 格。</li>
+    <li>上下對折回去，沿中央折線<b>只剪中間兩格的寬度</b>（就是預覽上那條紅線）。</li>
+    <li>攤開，沿長邊上下對折，讓切口在中間。</li>
+    <li>抓著左右兩端往中間推，切口會撐開成十字形。</li>
+    <li>把四片繞成一疊、壓平 —— 8 頁小誌完成。</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // A4 landscape, split into 4 columns x 2 rows of A7 portrait cells.
+  var MM = 96 / 25.4;
+  var SHEET_W = 297, SHEET_H = 210, CELL_W = SHEET_W / 4, CELL_H = SHEET_H / 2;
+
+  // A cell entry maps a physical grid position to a page number + 180 deg rotation.
+  // Grid index 0-3 = top row (left to right), 4-7 = bottom row (left to right).
+  var PRESETS = {
+    A: [{p:5,r:1},{p:4,r:1},{p:3,r:1},{p:2,r:1},{p:6,r:0},{p:7,r:0},{p:8,r:0},{p:1,r:0}],
+    B: [{p:2,r:1},{p:3,r:1},{p:4,r:1},{p:5,r:1},{p:1,r:0},{p:8,r:0},{p:7,r:0},{p:6,r:0}]
+  };
+
+  var STORE_KEY = 'zine-imposer/settings';
+  var state = {
+    cells: clone(PRESETS.A),
+    mode: 'art',
+    fit: 'cover',
+    inset: 0,
+    guidesOn: true,
+    guidesPrint: false
+  };
+  var images = {}; // page number (1-8) -> data URL, kept in memory only
+
+  function clone(v) { return JSON.parse(JSON.stringify(v)); }
+  function $(id) { return document.getElementById(id); }
+  function roleOf(p) { return p === 1 ? '封面' : p === 8 ? '封底' : '第 ' + p + ' 頁'; }
+
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (raw) Object.assign(state, JSON.parse(raw));
+    } catch (e) { /* ignore corrupt settings */ }
+  }
+
+  // ---------- upload slots ----------
+  function buildSlots() {
+    var host = $('slots');
+    host.innerHTML = '';
+    for (var p = 1; p <= 8; p++) {
+      (function (page) {
+        var el = document.createElement('div');
+        el.className = 'slot';
+        el.innerHTML =
+          '<div class="label">' + roleOf(page) + '</div>' +
+          '<div class="thumb">+</div>' +
+          '<button class="clear">清除</button>';
+        var thumb = el.querySelector('.thumb');
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        el.appendChild(input);
+
+        thumb.addEventListener('click', function () { input.click(); });
+        input.addEventListener('change', function () {
+          if (input.files[0]) readInto(page, input.files[0]);
+        });
+        el.querySelector('.clear').addEventListener('click', function () {
+          delete images[page];
+          refresh();
+        });
+        host.appendChild(el);
+      })(p);
+    }
+  }
+
+  function paintSlots() {
+    var nodes = $('slots').children;
+    for (var p = 1; p <= 8; p++) {
+      var el = nodes[p - 1];
+      var thumb = el.querySelector('.thumb');
+      if (images[p]) {
+        el.classList.add('filled');
+        thumb.style.backgroundImage = 'url("' + images[p] + '")';
+        thumb.textContent = '';
+      } else {
+        el.classList.remove('filled');
+        thumb.style.backgroundImage = '';
+        thumb.textContent = '+';
+      }
+    }
+  }
+
+  function readInto(page, file) {
+    var fr = new FileReader();
+    fr.onload = function () { images[page] = fr.result; refresh(); };
+    fr.readAsDataURL(file);
+  }
+
+  $('bulk').addEventListener('change', function (e) {
+    var files = Array.prototype.slice.call(e.target.files);
+    files.sort(function (a, b) {
+      return a.name.localeCompare(b.name, undefined, { numeric: true });
+    });
+    files.slice(0, 8).forEach(function (f, i) { readInto(i + 1, f); });
+    e.target.value = '';
+  });
+
+  $('clearAll').addEventListener('click', function () {
+    images = {};
+    refresh();
+  });
+
+  // ---------- mapping editor ----------
+  function buildMapGrid() {
+    var host = $('mapgrid');
+    host.innerHTML = '';
+    state.cells.forEach(function (cell, i) {
+      var row = i < 4 ? '上排' : '下排';
+      var col = (i % 4) + 1;
+      var el = document.createElement('div');
+      el.className = 'mapcell';
+      var opts = '';
+      for (var p = 1; p <= 8; p++) {
+        opts += '<option value="' + p + '"' + (cell.p === p ? ' selected' : '') + '>' + roleOf(p) + '</option>';
+      }
+      el.innerHTML =
+        '<div class="pos">' + row + '　第 ' + col + ' 格</div>' +
+        '<select>' + opts + '</select>' +
+        '<label class="check"><input type="checkbox"' + (cell.r ? ' checked' : '') + '> 旋轉 180°</label>';
+      el.querySelector('select').addEventListener('change', function (e) {
+        state.cells[i].p = +e.target.value;
+        refresh();
+      });
+      el.querySelector('input').addEventListener('change', function (e) {
+        state.cells[i].r = e.target.checked ? 1 : 0;
+        refresh();
+      });
+      host.appendChild(el);
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-preset]'), function (btn) {
+    btn.addEventListener('click', function () {
+      state.cells = clone(PRESETS[btn.getAttribute('data-preset')]);
+      buildMapGrid();
+      refresh();
+    });
+  });
+
+  // ---------- sheet ----------
+  function paintSheet() {
+    var sheet = $('sheet');
+    Array.prototype.forEach.call(sheet.querySelectorAll('.cell'), function (n) { n.remove(); });
+
+    state.cells.forEach(function (cell, i) {
+      var el = document.createElement('div');
+      el.className = 'cell' + (cell.r ? ' rot' : '');
+      el.style.left = (i % 4) * CELL_W + 'mm';
+      el.style.top = (i < 4 ? 0 : CELL_H) + 'mm';
+
+      if (state.mode === 'test') {
+        el.innerHTML =
+          '<div class="testmark">' +
+          '<div class="up">▲ 上</div>' +
+          '<div class="num">' + cell.p + '</div>' +
+          '<div class="role">' + roleOf(cell.p) + '</div>' +
+          '</div>';
+      } else {
+        var art = document.createElement('div');
+        art.className = 'art';
+        art.style.setProperty('--inset', state.inset + 'mm');
+        art.style.setProperty('--fit', state.fit);
+        if (images[cell.p]) art.style.backgroundImage = 'url("' + images[cell.p] + '")';
+        el.appendChild(art);
+      }
+      sheet.insertBefore(el, $('guides'));
+    });
+  }
+
+  function paintGuides() {
+    var g = $('guides');
+    var show = state.guidesOn;
+    g.style.display = show ? 'block' : 'none';
+    g.innerHTML = '';
+    if (!show) return;
+    [1, 2, 3].forEach(function (c) {
+      var d = document.createElement('div');
+      d.className = 'fold v';
+      d.style.left = c * CELL_W + 'mm';
+      g.appendChild(d);
+    });
+    var h = document.createElement('div');
+    h.className = 'fold h';
+    h.style.top = CELL_H + 'mm';
+    g.appendChild(h);
+    var cut = document.createElement('div');
+    cut.className = 'cut';
+    g.appendChild(cut);
+    var lab = document.createElement('div');
+    lab.className = 'cutlabel';
+    lab.textContent = '✂ 剪這一刀';
+    g.appendChild(lab);
+  }
+
+  function fitToStage() {
+    var stage = $('stage');
+    var avail = stage.clientWidth;
+    var s = Math.min(1, avail / (SHEET_W * MM));
+    $('sheet').style.setProperty('--s', s);
+    stage.style.height = (SHEET_H * MM * s) + 'px';
+  }
+
+  // ---------- glue ----------
+  var printStyle = document.createElement('style');
+  document.head.appendChild(printStyle);
+
+  function refresh() {
+    paintSlots();
+    paintSheet();
+    paintGuides();
+    fitToStage();
+    printStyle.textContent = state.guidesPrint
+      ? ''
+      : '@media print { #guides { display: none !important; } }';
+    save();
+  }
+
+  function bindOption(id, key, kind) {
+    var el = $(id);
+    if (kind === 'check') el.checked = state[key];
+    else el.value = state[key];
+    el.addEventListener('change', function () {
+      state[key] = kind === 'check' ? el.checked : (kind === 'num' ? +el.value : el.value);
+      refresh();
+    });
+  }
+
+  $('print').addEventListener('click', function () { window.print(); });
+  window.addEventListener('resize', fitToStage);
+
+  load();
+  buildSlots();
+  buildMapGrid();
+  bindOption('mode', 'mode');
+  bindOption('fit', 'fit');
+  bindOption('inset', 'inset', 'num');
+  bindOption('guidesOn', 'guidesOn', 'check');
+  bindOption('guidesPrint', 'guidesPrint', 'check');
+  refresh();
+})();
+</script>
+</body>
+</html>
