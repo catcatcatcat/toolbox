@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>貓貓工具箱</title>
+<meta name="description" content="一堆單頁、零依賴、離線可用的小工具。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* ---- tokens: light (bare :root defines the complete palette) ---- */
+  :root {
+    --ground:    #F1EFE9;
+    --surface:   #FBFAF7;
+    --surface-2: #E9E6DE;
+    --ink:       #1B1B20;
+    --ink-2:     #6C6E79;
+    --rule:      #D6D2C7;
+    --blue:      #2E4A8C;
+    --blue-wash: #E3E7F2;
+    --pink:      #E0357F;
+    --pink-wash: #FBE4EE;
+
+    --font-display: "Archivo", "PingFang TC", "Noto Sans TC", "Hiragino Sans", sans-serif;
+    --font-body: "IBM Plex Sans", "PingFang TC", "Noto Sans TC", "Hiragino Sans", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:    #131418;
+      --surface:   #1C1D23;
+      --surface-2: #24262E;
+      --ink:       #ECEBE7;
+      --ink-2:     #9A9CA8;
+      --rule:      #343640;
+      --blue:      #8AA6E8;
+      --blue-wash: #232838;
+      --pink:      #FF6FA8;
+      --pink-wash: #35202B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:    #131418;
+    --surface:   #1C1D23;
+    --surface-2: #24262E;
+    --ink:       #ECEBE7;
+    --ink-2:     #9A9CA8;
+    --rule:      #343640;
+    --blue:      #8AA6E8;
+    --blue-wash: #232838;
+    --pink:      #FF6FA8;
+    --pink-wash: #35202B;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  :focus-visible { outline: 2px solid var(--pink); outline-offset: 3px; }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 0 28px 72px; }
+
+  /* ---- masthead ---- */
+  .masthead { padding: 56px 0 30px; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--pink); margin: 0 0 12px;
+  }
+  .masthead h1 {
+    font-family: var(--font-display);
+    font-weight: 700; font-size: clamp(32px, 5.4vw, 50px);
+    letter-spacing: -.02em; line-height: 1.08;
+    margin: 0 0 14px; text-wrap: balance;
+  }
+  .masthead .lede { margin: 0; max-width: 54ch; color: var(--ink-2); }
+
+  /* ---- tool list ---- */
+  .tools { display: flex; flex-direction: column; }
+  .tool {
+    display: grid; gap: 4px 22px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none; color: inherit;
+    transition: background-color .12s ease, padding-left .12s ease;
+  }
+  .tool:hover, .tool:focus-visible {
+    background: var(--blue-wash);
+    padding-left: 14px; padding-right: 14px;
+  }
+  .tool h2 {
+    font-family: var(--font-display);
+    font-weight: 600; font-size: 21px; letter-spacing: -.01em;
+    margin: 0; color: var(--blue);
+  }
+  .tool .slug {
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--ink-2); white-space: nowrap;
+  }
+  .tool p { grid-column: 1 / -1; margin: 0; color: var(--ink-2); max-width: 60ch; }
+  @media (max-width: 560px) {
+    .tool { grid-template-columns: minmax(0, 1fr); }
+    .tool .slug { grid-column: 1; }
+  }
+
+  /* ---- colophon ---- */
+  .colophon {
+    margin-top: 46px; padding: 18px 20px;
+    background: var(--surface); border-left: 3px solid var(--pink);
+    font-size: 13.5px; line-height: 1.7; color: var(--ink-2);
+  }
+  .colophon strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Toolbox</p>
+    <h1>貓貓工具箱</h1>
+    <p class="lede">
+      一堆單頁小工具。每個都是一個檔案、零依賴、離線也能跑，
+      資料全部留在你的瀏覽器裡，不會上傳到任何地方。
+    </p>
+  </header>
+
+  <main class="tools">
+    <a class="tool" href="./zine-fold/">
+      <h2>八折小誌拼版器</h2>
+      <span class="slug">/zine-fold/</span>
+      <p>
+        把 8 張頁面圖排進一張 A4 橫向紙。列印後折三次、剪一刀，
+        就是一本 8 頁小誌。附測試頁模式與可編輯的版型對照表。
+      </p>
+    </a>
+  </main>
+
+  <p class="colophon">
+    <strong>做法刻意保守。</strong>
+    沒有框架、沒有 build step、沒有後端——每個工具就是一份 HTML，
+    放著十年不維護也還能打開。想留一份在自己電腦上，
+    直接把頁面存成 HTML 檔即可，離線一樣能用。
+  </p>
+
+</div>
+</body>
+</html>
