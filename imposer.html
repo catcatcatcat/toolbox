@@ -4,252 +4,412 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>八折小誌拼版器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
+  /* ---- tokens: light (bare :root defines the complete palette) ---- */
   :root {
-    --bg: #f6f6f8;
-    --panel: #fff;
-    --line: #dcdce4;
-    --ink: #1d1d24;
-    --muted: #6a6a7a;
-    --accent: #4f46e5;
-    --danger: #d92d20;
+    --ground:    #F1EFE9;
+    --surface:   #FBFAF7;
+    --surface-2: #E9E6DE;
+    --ink:       #1B1B20;
+    --ink-2:     #6C6E79;
+    --rule:      #D6D2C7;
+    --blue:      #2E4A8C;
+    --blue-wash: #E3E7F2;
+    --pink:      #E0357F;
+    --pink-wash: #FBE4EE;
+
+    /* the simulated sheet is paper: identical in every theme */
+    --paper:      #FFFFFF;
+    --paper-ink:  #16161A;
+    --paper-mute: #7A7A85;
+    --paper-fold: #B4B0A6;
+
+    --font-display: "Archivo", "PingFang TC", "Noto Sans TC", "Hiragino Sans", sans-serif;
+    --font-body: "IBM Plex Sans", "PingFang TC", "Noto Sans TC", "Hiragino Sans", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:    #131418;
+      --surface:   #1C1D23;
+      --surface-2: #24262E;
+      --ink:       #ECEBE7;
+      --ink-2:     #9A9CA8;
+      --rule:      #343640;
+      --blue:      #8AA6E8;
+      --blue-wash: #232838;
+      --pink:      #FF6FA8;
+      --pink-wash: #35202B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:    #131418;
+    --surface:   #1C1D23;
+    --surface-2: #24262E;
+    --ink:       #ECEBE7;
+    --ink-2:     #9A9CA8;
+    --rule:      #343640;
+    --blue:      #8AA6E8;
+    --blue-wash: #232838;
+    --pink:      #FF6FA8;
+    --pink-wash: #35202B;
+  }
+
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
-    background: var(--bg);
+    background: var(--ground);
     color: var(--ink);
-    font: 15px/1.6 -apple-system, "Hiragino Sans", "PingFang TC", "Noto Sans TC", sans-serif;
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
   }
-  header {
-    padding: 20px 24px 12px;
-    border-bottom: 1px solid var(--line);
-    background: var(--panel);
-  }
-  h1 { margin: 0 0 4px; font-size: 20px; }
-  header p { margin: 0; color: var(--muted); font-size: 13px; }
-  main { max-width: 1180px; margin: 0 auto; padding: 24px; }
-  section {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 18px 20px;
-    margin-bottom: 20px;
-  }
-  h2 { margin: 0 0 14px; font-size: 15px; letter-spacing: .04em; }
-  .hint { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+  :focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
 
-  /* --- page upload slots --- */
-  .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .slot {
-    border: 1px dashed var(--line);
-    border-radius: 8px;
-    padding: 8px;
-    text-align: center;
-    background: #fafafc;
+  .app { max-width: 1280px; margin: 0 auto; padding: 0 28px 64px; }
+
+  /* ---- masthead ---- */
+  .masthead { padding: 44px 0 32px; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--pink); margin: 0 0 12px;
   }
-  .slot.filled { border-style: solid; border-color: var(--accent); }
-  .slot .label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .slot .thumb {
-    width: 100%; aspect-ratio: 74.25 / 105;
-    background: #fff center/contain no-repeat;
-    border: 1px solid var(--line); border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    color: #c4c4d0; font-size: 24px; cursor: pointer;
+  .masthead h1 {
+    font-family: var(--font-display);
+    font-weight: 700; font-size: clamp(30px, 4.6vw, 46px);
+    letter-spacing: -.02em; line-height: 1.1;
+    margin: 0 0 10px; text-wrap: balance;
   }
-  .slot button.clear {
-    margin-top: 6px; font-size: 11px; padding: 2px 8px;
-    border: 1px solid var(--line); border-radius: 4px;
-    background: #fff; color: var(--muted); cursor: pointer;
+  .masthead .lede {
+    margin: 0; max-width: 62ch; color: var(--ink-2); font-size: 15px;
+  }
+  .notice {
+    display: none;
+    margin-top: 20px; padding: 12px 16px;
+    background: var(--pink-wash); border-left: 3px solid var(--pink);
+    font-size: 13.5px; line-height: 1.6;
+  }
+  .notice.on { display: block; }
+
+  /* ---- two-column workbench ---- */
+  .workbench {
+    display: grid; gap: 40px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr);
+    align-items: start; padding-top: 36px;
+  }
+  @media (max-width: 1020px) {
+    .workbench { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+  }
+  .col { display: flex; flex-direction: column; gap: 34px; min-width: 0; }
+  .col-out { position: sticky; top: 24px; }
+  @media (max-width: 1020px) { .col-out { position: static; } }
+
+  /* ---- blocks ---- */
+  .block { display: flex; flex-direction: column; gap: 14px; }
+  .block-head { display: flex; align-items: baseline; gap: 12px; }
+  .step {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    color: var(--paper); background: var(--blue);
+    padding: 3px 7px; letter-spacing: .06em; flex: none;
+  }
+  .block-head h2 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 17px; letter-spacing: -.01em; margin: 0;
+  }
+  .note { margin: 0; color: var(--ink-2); font-size: 13.5px; }
+  .note code, .inline-code {
+    font-family: var(--font-mono); font-size: .92em;
+    background: var(--surface-2); padding: 1px 5px;
   }
 
-  /* --- controls --- */
-  .controls { display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: flex-start; }
-  .field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
-  .field > span { color: var(--muted); }
+  /* ---- page slots ---- */
+  .slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .slot { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .slot-label {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em;
+    color: var(--ink-2); text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: center; gap: 4px;
+  }
+  .slot-drop {
+    aspect-ratio: 74.25 / 105;
+    background: var(--surface) center/contain no-repeat;
+    border: 1px dashed var(--rule);
+    display: grid; place-items: center;
+    color: var(--ink-2); font-size: 22px; font-family: var(--font-mono);
+    cursor: pointer; padding: 0;
+    transition: border-color .12s, background-color .12s;
+  }
+  .slot-drop:hover { border-color: var(--blue); }
+  .slot.is-filled .slot-drop { border: 1px solid var(--pink); }
+  .slot.is-filled .slot-label { color: var(--pink); }
+  .slot-clear {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .05em;
+    background: none; border: 0; color: var(--ink-2);
+    cursor: pointer; padding: 0; text-decoration: underline;
+    visibility: hidden;
+  }
+  .slot.is-filled .slot-clear { visibility: visible; }
+
+  .filebar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  input[type=file]::file-selector-button {
+    font: inherit; font-size: 13px; font-family: var(--font-body);
+    padding: 7px 14px; margin-right: 10px; cursor: pointer;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--rule);
+  }
+  input[type=file] { font-size: 12.5px; color: var(--ink-2); max-width: 100%; }
+
+  /* ---- form controls ---- */
+  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 18px 22px; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field > .cap {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-2);
+  }
   select, input[type=number] {
-    font: inherit; font-size: 13px; padding: 5px 8px;
-    border: 1px solid var(--line); border-radius: 6px; background: #fff;
+    font-family: var(--font-body); font-size: 13.5px;
+    padding: 7px 9px; width: 100%;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 0;
   }
-  label.check { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; }
-  button.primary {
-    font: inherit; font-weight: 600; padding: 9px 20px;
-    background: var(--accent); color: #fff;
-    border: 0; border-radius: 8px; cursor: pointer;
-  }
-  button.ghost {
-    font: inherit; font-size: 13px; padding: 7px 14px;
-    background: #fff; color: var(--ink);
-    border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
-  }
+  input[type=number] { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .checks { display: flex; flex-direction: column; gap: 7px; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--pink); flex: none; }
 
-  /* --- imposition sheet (A4 landscape, 297 x 210 mm) --- */
-  #stage { overflow: hidden; }
-  #sheet {
-    position: relative;
-    width: 297mm; height: 210mm;
-    background: #fff;
-    transform: scale(var(--s, 1));
-    transform-origin: top left;
-    box-shadow: 0 0 0 1px var(--line);
+  .btn {
+    font-family: var(--font-body); font-size: 13.5px;
+    padding: 8px 15px; cursor: pointer;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 0;
+  }
+  .btn:hover { border-color: var(--blue); color: var(--blue); }
+  .btn-go {
+    font-family: var(--font-display); font-weight: 600; font-size: 15px;
+    letter-spacing: .01em; padding: 12px 26px;
+    background: var(--pink); color: #FFF; border: 0; cursor: pointer;
+  }
+  .btn-go:hover { filter: brightness(1.07); }
+
+  /* ---- the sheet: A4 landscape, 297 x 210 mm ---- */
+  .stage { overflow: hidden; }
+  .sheet {
+    position: relative; width: 297mm; height: 210mm;
+    background: var(--paper);
+    transform: scale(var(--s, 1)); transform-origin: top left;
+    box-shadow: 0 1px 3px rgba(0,0,0,.18), 0 10px 30px rgba(0,0,0,.10);
   }
   .cell { position: absolute; width: 74.25mm; height: 105mm; overflow: hidden; }
   .cell .art {
     position: absolute; inset: var(--inset, 0);
-    background-repeat: no-repeat;
-    background-position: center;
+    background-repeat: no-repeat; background-position: center;
     background-size: var(--fit, cover);
   }
-  .cell.rot .art { transform: rotate(180deg); }
-  .cell .testmark {
+  .cell.is-rot .art { transform: rotate(180deg); }
+  .mark {
     position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 4mm; color: #111;
-    font-family: -apple-system, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3mm; color: var(--paper-ink);
   }
-  .cell.rot .testmark { transform: rotate(180deg); }
-  .testmark .num { font-size: 26mm; font-weight: 700; line-height: 1; }
-  .testmark .role { font-size: 5mm; color: #666; }
-  .testmark .up { font-size: 7mm; color: #999; }
+  .cell.is-rot .mark { transform: rotate(180deg); }
+  .mark .up { font-family: var(--font-mono); font-size: 4.4mm; color: var(--paper-mute); letter-spacing: .1em; }
+  .mark .num { font-family: var(--font-display); font-weight: 700; font-size: 30mm; line-height: 1; }
+  .mark .who { font-family: var(--font-mono); font-size: 4.4mm; color: var(--paper-mute); }
 
-  #guides { position: absolute; inset: 0; pointer-events: none; }
-  #guides .fold {
-    position: absolute; background: transparent;
-    border-color: #b9b9c8; border-style: dashed; border-width: 0;
+  .guides { position: absolute; inset: 0; pointer-events: none; }
+  .guides .fold { position: absolute; border-color: var(--paper-fold); border-style: dashed; border-width: 0; }
+  .guides .fold-v { top: 0; height: 210mm; border-left-width: .3mm; }
+  .guides .fold-h { left: 0; width: 297mm; border-top-width: .3mm; }
+  .guides .cut { position: absolute; left: 74.25mm; top: 105mm; width: 148.5mm; border-top: .7mm solid var(--pink); }
+  .guides .cut-tag {
+    position: absolute; left: 50%; top: 107mm; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 3.8mm; letter-spacing: .06em; color: var(--pink);
   }
-  #guides .v { top: 0; height: 210mm; border-left-width: .3mm; }
-  #guides .h { left: 0; width: 297mm; border-top-width: .3mm; }
-  #guides .cut {
-    position: absolute; left: 74.25mm; top: 105mm; width: 148.5mm;
-    border-top: .6mm solid var(--danger);
-  }
-  #guides .cutlabel {
-    position: absolute; left: 120mm; top: 107mm;
-    font-size: 4mm; color: var(--danger);
+  .caliper {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .07em;
+    color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 8px;
   }
 
-  /* --- mapping editor --- */
-  .mapgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 620px; }
+  .printbar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .printbar .note { flex: 1 1 260px; }
+  .printbar b { color: var(--ink); font-weight: 600; }
+
+  /* ---- mapping editor ---- */
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mapgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .mapcell {
-    border: 1px solid var(--line); border-radius: 8px;
-    padding: 8px 10px; background: #fafafc; font-size: 12px;
+    display: flex; flex-direction: column; gap: 6px; min-width: 0;
+    background: var(--surface); border: 1px solid var(--rule); padding: 8px;
   }
-  .mapcell .pos { color: var(--muted); margin-bottom: 6px; }
-  .mapcell select { width: 100%; }
-  .mapcell label.check { margin-top: 6px; font-size: 12px; }
+  .mapcell .pos {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em;
+    color: var(--ink-2); text-transform: uppercase;
+  }
+  .mapcell select { font-size: 12.5px; padding: 5px 6px; }
+  .mapcell .check { font-size: 11.5px; gap: 6px; }
+  .maprow-tag {
+    grid-column: 1 / -1; font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--blue);
+    border-bottom: 1px solid var(--rule); padding-bottom: 3px; margin-top: 4px;
+  }
 
-  ol.steps { margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; }
-  ol.steps li { margin-bottom: 5px; }
-  ol.steps b { color: var(--ink); }
+  /* ---- fold instructions ---- */
+  .folds { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .folds li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; font-size: 13.5px; color: var(--ink-2); }
+  .folds .n {
+    font-family: var(--font-mono); font-size: 11px; color: var(--blue);
+    border-top: 1px solid var(--blue); padding-top: 3px;
+  }
+  .folds b { color: var(--ink); font-weight: 600; }
 
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  /* ---- print: the sheet, nothing else ---- */
   @media print {
-    .noprint { display: none !important; }
-    body { background: #fff; }
-    main { padding: 0; max-width: none; }
-    section { border: 0; padding: 0; margin: 0; border-radius: 0; }
-    #stage { overflow: visible; }
-    #sheet { --s: 1 !important; box-shadow: none; }
+    .no-print { display: none !important; }
+    body { background: #FFF; }
+    .app { max-width: none; padding: 0; }
+    .workbench { display: block; padding: 0; gap: 0; }
+    .col, .col-out { display: block; position: static !important; gap: 0; }
+    .block { gap: 0; }
+    .stage { overflow: visible; }
+    .sheet { --s: 1 !important; box-shadow: none; }
     @page { size: A4 landscape; margin: 0; }
   }
 </style>
 </head>
 <body>
 
-<header class="noprint">
-  <h1>八折小誌拼版器</h1>
-  <p>把 8 張頁面圖排進一張 A4，折成 8 頁小誌。圖片只在你的瀏覽器裡處理，不會上傳到任何地方。</p>
-</header>
+<div class="app">
 
-<main>
-
-<section class="noprint">
-  <h2>1 ── 放入 8 張頁面圖</h2>
-  <p class="hint">
-    一次選 8 個檔也可以（會依檔名排序自動填入 1～8，所以建議命名成 <code>1.png</code> ～ <code>8.png</code>）。
-    每頁的原始比例最好接近 A7 直式（74 × 105 mm，約 1:1.414）。
-  </p>
-  <div style="margin-bottom:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <input type="file" id="bulk" accept="image/*" multiple>
-    <button class="ghost" id="clearAll">全部清空</button>
-  </div>
-  <div class="slots" id="slots"></div>
-</section>
-
-<section class="noprint">
-  <h2>2 ── 設定</h2>
-  <div class="controls">
-    <div class="field">
-      <span>模式</span>
-      <select id="mode">
-        <option value="art">拼版（放圖片）</option>
-        <option value="test">測試頁（印編號，用來驗證版型）</option>
-      </select>
+  <header class="masthead no-print">
+    <p class="eyebrow">One-sheet zine · imposition</p>
+    <h1>八折小誌拼版器</h1>
+    <p class="lede">
+      一張 A4、折三次、剪一刀，就是一本 8 頁小誌。你只管把每一頁排漂亮，
+      哪一頁該擺在紙上哪個位置、要不要倒過來印，交給這裡。圖片全程留在你的瀏覽器，不會上傳。
+    </p>
+    <div class="notice" id="frameNotice">
+      <b>你正在預覽模式中檢視。</b>版面與設定都能玩，但<b>列印功能在嵌入畫面裡不會正常運作</b>——
+      要真的印出來，請把 <span class="inline-code">imposer.html</span> 存到電腦上，用瀏覽器直接打開。
     </div>
-    <div class="field">
-      <span>圖片填滿方式</span>
-      <select id="fit">
-        <option value="cover">填滿裁切（cover）</option>
-        <option value="contain">完整顯示留白（contain）</option>
-      </select>
+  </header>
+
+  <div class="workbench">
+
+    <!-- ============ input column ============ -->
+    <div class="col no-print">
+
+      <section class="block">
+        <div class="block-head"><span class="step">01</span><h2>放入 8 張頁面圖</h2></div>
+        <p class="note">
+          一次選 8 個檔即可，會依檔名數字排序填入，所以建議命名成 <code>1.png</code> ～ <code>8.png</code>。
+          每頁比例最好接近 A7 直式（74 × 105 mm）。
+        </p>
+        <div class="filebar">
+          <input type="file" id="bulk" accept="image/*" multiple>
+          <button class="btn" id="clearAll" type="button">全部清空</button>
+        </div>
+        <div class="slots" id="slots"></div>
+      </section>
+
+      <section class="block">
+        <div class="block-head"><span class="step">02</span><h2>輸出設定</h2></div>
+        <div class="fields">
+          <label class="field">
+            <span class="cap">模式</span>
+            <select id="mode">
+              <option value="art">拼版（放圖片）</option>
+              <option value="test">測試頁（印編號）</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="cap">圖片填滿</span>
+            <select id="fit">
+              <option value="cover">填滿裁切</option>
+              <option value="contain">完整顯示留白</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="cap">每頁內縮 mm</span>
+            <input type="number" id="inset" min="0" max="15" step="0.5" value="0">
+          </label>
+          <div class="field">
+            <span class="cap">輔助線</span>
+            <div class="checks">
+              <label class="check"><input type="checkbox" id="guidesOn" checked> 畫面顯示折線與切線</label>
+              <label class="check"><input type="checkbox" id="guidesPrint"> 列印時一起印出</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head"><span class="step">03</span><h2>版型校正</h2></div>
+        <p class="note">
+          八折本的折法有鏡像變體，網路上的版型不一定合你的手。
+          <b>先用測試頁印一張、折起來看</b>：翻頁順序是 1→2→…→8 且每頁正立就對了。
+          不對就換預設 B，或逐格手動改——設定會自動記住。
+        </p>
+        <div class="presets">
+          <button class="btn" type="button" data-preset="A">預設 A · 下排 6·7·8·封面</button>
+          <button class="btn" type="button" data-preset="B">預設 B · 鏡像</button>
+        </div>
+        <div class="mapgrid" id="mapgrid"></div>
+      </section>
+
     </div>
-    <div class="field">
-      <span>每頁內縮留白（mm）</span>
-      <input type="number" id="inset" min="0" max="15" step="0.5" value="0" style="width:90px">
-    </div>
-    <div class="field">
-      <span>輔助線</span>
-      <label class="check"><input type="checkbox" id="guidesOn" checked> 畫面顯示折線與切線</label>
-      <label class="check"><input type="checkbox" id="guidesPrint"> 列印時也印出輔助線</label>
+
+    <!-- ============ output column ============ -->
+    <div class="col col-out">
+
+      <section class="block">
+        <div class="block-head no-print"><span class="step">出</span><h2>拼版預覽</h2></div>
+        <p class="note no-print">
+          <span style="color:var(--pink)">■</span> 紅線是要剪的那一刀，只剪中央兩格的寬度，不要剪穿整張紙。
+          灰虛線是折線。
+        </p>
+        <div class="stage" id="stage"><div class="sheet" id="sheet"><div class="guides" id="guides"></div></div></div>
+        <div class="caliper no-print">
+          <span>A4 297 × 210 mm · 橫向</span>
+          <span>8 格 · 每格 74.25 × 105 mm</span>
+        </div>
+        <div class="printbar no-print">
+          <button class="btn-go" id="print" type="button">列印 / 存成 PDF</button>
+          <p class="note">
+            列印對話框請設：紙張 A4、方向 <b>橫向</b>、縮放 <b>實際大小 100%</b>、
+            關閉頁首頁尾、<b>單面列印</b>。
+          </p>
+        </div>
+      </section>
+
+      <section class="block no-print">
+        <div class="block-head"><span class="step">折</span><h2>折法備忘</h2></div>
+        <ol class="folds">
+          <li><span class="n">1</span><span>A4 <b>橫放</b>，左右對折 → 再左右對折 → 再上下對折，攤開得到 8 格。</span></li>
+          <li><span class="n">2</span><span>上下對折回去，沿中央折線<b>只剪中間兩格的寬度</b>，也就是預覽上那條紅線。</span></li>
+          <li><span class="n">3</span><span>攤開，沿長邊上下對折，讓切口落在中間。</span></li>
+          <li><span class="n">4</span><span>抓著左右兩端往中間推，切口會撐開成十字形。</span></li>
+          <li><span class="n">5</span><span>把四片繞成一疊、壓平——8 頁小誌完成。</span></li>
+        </ol>
+      </section>
+
     </div>
   </div>
-</section>
-
-<section>
-  <h2 class="noprint">3 ── 拼版預覽（A4 橫向）</h2>
-  <p class="hint noprint">
-    紅線 = 要剪的那一刀（只剪中央兩格的長度，不要剪穿整張紙）。灰虛線 = 折線。
-  </p>
-  <div id="stage"><div id="sheet"><div id="guides"></div></div></div>
-  <div class="noprint" style="margin-top:16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-    <button class="primary" id="print">列印 / 存成 PDF</button>
-    <span class="hint" style="margin:0">
-      列印對話框請設定：紙張 A4、方向<b>橫向</b>、縮放<b>實際大小 100%</b>、關閉頁首頁尾、<b>單面列印</b>。
-    </span>
-  </div>
-</section>
-
-<section class="noprint">
-  <h2>4 ── 版型對照表（折法不同就改這裡）</h2>
-  <p class="hint">
-    八折本的折法有鏡像變體，網路上的版型不一定合你的折法。<b>先用「測試頁」模式印一張、折起來看</b>：
-    如果翻頁順序是 1→2→3…→8 且每頁都正立，版型就對了；不對就在下面調整，設定會自動記住。
-  </p>
-  <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
-    <button class="ghost" data-preset="A">套用預設 A：下排 6·7·8·封面</button>
-    <button class="ghost" data-preset="B">套用預設 B：下排 封面·8·7·6（鏡像）</button>
-  </div>
-  <div class="mapgrid" id="mapgrid"></div>
-</section>
-
-<section class="noprint">
-  <h2>折法備忘</h2>
-  <ol class="steps">
-    <li>A4 <b>橫放</b>，左右對折 → 再左右對折 → 再上下對折，攤開得到 8 格。</li>
-    <li>上下對折回去，沿中央折線<b>只剪中間兩格的寬度</b>（就是預覽上那條紅線）。</li>
-    <li>攤開，沿長邊上下對折，讓切口在中間。</li>
-    <li>抓著左右兩端往中間推，切口會撐開成十字形。</li>
-    <li>把四片繞成一疊、壓平 —— 8 頁小誌完成。</li>
-  </ol>
-</section>
-
-</main>
+</div>
 
 <script>
 (function () {
   'use strict';
 
-  // A4 landscape, split into 4 columns x 2 rows of A7 portrait cells.
   var MM = 96 / 25.4;
   var SHEET_W = 297, SHEET_H = 210, CELL_W = SHEET_W / 4, CELL_H = SHEET_H / 2;
 
@@ -263,29 +423,27 @@
   var STORE_KEY = 'zine-imposer/settings';
   var state = {
     cells: clone(PRESETS.A),
-    mode: 'art',
-    fit: 'cover',
-    inset: 0,
-    guidesOn: true,
-    guidesPrint: false
+    mode: 'art', fit: 'cover', inset: 0,
+    guidesOn: true, guidesPrint: false
   };
   var images = {}; // page number (1-8) -> data URL, kept in memory only
 
   function clone(v) { return JSON.parse(JSON.stringify(v)); }
   function $(id) { return document.getElementById(id); }
-  function roleOf(p) { return p === 1 ? '封面' : p === 8 ? '封底' : '第 ' + p + ' 頁'; }
+  function roleOf(p) { return p === 1 ? '封面' : p === 8 ? '封底' : 'P' + p; }
+  function longRoleOf(p) { return p === 1 ? '封面' : p === 8 ? '封底' : '第 ' + p + ' 頁'; }
 
   function save() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
   }
   function load() {
     try {
       var raw = localStorage.getItem(STORE_KEY);
       if (raw) Object.assign(state, JSON.parse(raw));
-    } catch (e) { /* ignore corrupt settings */ }
+    } catch (e) { /* storage unavailable or settings corrupt */ }
   }
 
-  // ---------- upload slots ----------
+  // ---------- page slots ----------
   function buildSlots() {
     var host = $('slots');
     host.innerHTML = '';
@@ -294,21 +452,21 @@
         var el = document.createElement('div');
         el.className = 'slot';
         el.innerHTML =
-          '<div class="label">' + roleOf(page) + '</div>' +
-          '<div class="thumb">+</div>' +
-          '<button class="clear">清除</button>';
-        var thumb = el.querySelector('.thumb');
+          '<div class="slot-label"><span>' + roleOf(page) + '</span>' +
+          '<button class="slot-clear" type="button">清除</button></div>' +
+          '<button class="slot-drop" type="button" aria-label="選擇' + longRoleOf(page) + '的圖片">+</button>';
+
         var input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        input.style.display = 'none';
+        input.hidden = true;
         el.appendChild(input);
 
-        thumb.addEventListener('click', function () { input.click(); });
+        el.querySelector('.slot-drop').addEventListener('click', function () { input.click(); });
         input.addEventListener('change', function () {
           if (input.files[0]) readInto(page, input.files[0]);
         });
-        el.querySelector('.clear').addEventListener('click', function () {
+        el.querySelector('.slot-clear').addEventListener('click', function () {
           delete images[page];
           refresh();
         });
@@ -321,15 +479,15 @@
     var nodes = $('slots').children;
     for (var p = 1; p <= 8; p++) {
       var el = nodes[p - 1];
-      var thumb = el.querySelector('.thumb');
+      var drop = el.querySelector('.slot-drop');
       if (images[p]) {
-        el.classList.add('filled');
-        thumb.style.backgroundImage = 'url("' + images[p] + '")';
-        thumb.textContent = '';
+        el.classList.add('is-filled');
+        drop.style.backgroundImage = 'url("' + images[p] + '")';
+        drop.textContent = '';
       } else {
-        el.classList.remove('filled');
-        thumb.style.backgroundImage = '';
-        thumb.textContent = '+';
+        el.classList.remove('is-filled');
+        drop.style.backgroundImage = '';
+        drop.textContent = '+';
       }
     }
   }
@@ -349,35 +507,34 @@
     e.target.value = '';
   });
 
-  $('clearAll').addEventListener('click', function () {
-    images = {};
-    refresh();
-  });
+  $('clearAll').addEventListener('click', function () { images = {}; refresh(); });
 
   // ---------- mapping editor ----------
   function buildMapGrid() {
     var host = $('mapgrid');
     host.innerHTML = '';
     state.cells.forEach(function (cell, i) {
-      var row = i < 4 ? '上排' : '下排';
-      var col = (i % 4) + 1;
+      if (i === 0 || i === 4) {
+        var tag = document.createElement('div');
+        tag.className = 'maprow-tag';
+        tag.textContent = i === 0 ? '上排（左 → 右）' : '下排（左 → 右）';
+        host.appendChild(tag);
+      }
       var el = document.createElement('div');
       el.className = 'mapcell';
       var opts = '';
       for (var p = 1; p <= 8; p++) {
-        opts += '<option value="' + p + '"' + (cell.p === p ? ' selected' : '') + '>' + roleOf(p) + '</option>';
+        opts += '<option value="' + p + '"' + (cell.p === p ? ' selected' : '') + '>' + longRoleOf(p) + '</option>';
       }
       el.innerHTML =
-        '<div class="pos">' + row + '　第 ' + col + ' 格</div>' +
-        '<select>' + opts + '</select>' +
-        '<label class="check"><input type="checkbox"' + (cell.r ? ' checked' : '') + '> 旋轉 180°</label>';
+        '<span class="pos">第 ' + (i % 4 + 1) + ' 格</span>' +
+        '<select aria-label="第 ' + (i % 4 + 1) + ' 格的頁碼">' + opts + '</select>' +
+        '<label class="check"><input type="checkbox"' + (cell.r ? ' checked' : '') + '> 轉 180°</label>';
       el.querySelector('select').addEventListener('change', function (e) {
-        state.cells[i].p = +e.target.value;
-        refresh();
+        state.cells[i].p = +e.target.value; refresh();
       });
       el.querySelector('input').addEventListener('change', function (e) {
-        state.cells[i].r = e.target.checked ? 1 : 0;
-        refresh();
+        state.cells[i].r = e.target.checked ? 1 : 0; refresh();
       });
       host.appendChild(el);
     });
@@ -398,16 +555,16 @@
 
     state.cells.forEach(function (cell, i) {
       var el = document.createElement('div');
-      el.className = 'cell' + (cell.r ? ' rot' : '');
+      el.className = 'cell' + (cell.r ? ' is-rot' : '');
       el.style.left = (i % 4) * CELL_W + 'mm';
       el.style.top = (i < 4 ? 0 : CELL_H) + 'mm';
 
       if (state.mode === 'test') {
         el.innerHTML =
-          '<div class="testmark">' +
-          '<div class="up">▲ 上</div>' +
-          '<div class="num">' + cell.p + '</div>' +
-          '<div class="role">' + roleOf(cell.p) + '</div>' +
+          '<div class="mark">' +
+          '<span class="up">▲ 上</span>' +
+          '<span class="num">' + cell.p + '</span>' +
+          '<span class="who">' + longRoleOf(cell.p) + '</span>' +
           '</div>';
       } else {
         var art = document.createElement('div');
@@ -423,33 +580,33 @@
 
   function paintGuides() {
     var g = $('guides');
-    var show = state.guidesOn;
-    g.style.display = show ? 'block' : 'none';
+    g.style.display = state.guidesOn ? 'block' : 'none';
     g.innerHTML = '';
-    if (!show) return;
+    if (!state.guidesOn) return;
+
     [1, 2, 3].forEach(function (c) {
       var d = document.createElement('div');
-      d.className = 'fold v';
+      d.className = 'fold fold-v';
       d.style.left = c * CELL_W + 'mm';
       g.appendChild(d);
     });
     var h = document.createElement('div');
-    h.className = 'fold h';
+    h.className = 'fold fold-h';
     h.style.top = CELL_H + 'mm';
     g.appendChild(h);
+
     var cut = document.createElement('div');
     cut.className = 'cut';
     g.appendChild(cut);
-    var lab = document.createElement('div');
-    lab.className = 'cutlabel';
-    lab.textContent = '✂ 剪這一刀';
-    g.appendChild(lab);
+    var tag = document.createElement('div');
+    tag.className = 'cut-tag';
+    tag.textContent = '✂ CUT · 148.5 mm';
+    g.appendChild(tag);
   }
 
   function fitToStage() {
     var stage = $('stage');
-    var avail = stage.clientWidth;
-    var s = Math.min(1, avail / (SHEET_W * MM));
+    var s = Math.min(1, stage.clientWidth / (SHEET_W * MM));
     $('sheet').style.setProperty('--s', s);
     stage.style.height = (SHEET_H * MM * s) + 'px';
   }
@@ -465,14 +622,13 @@
     fitToStage();
     printStyle.textContent = state.guidesPrint
       ? ''
-      : '@media print { #guides { display: none !important; } }';
+      : '@media print { .guides { display: none !important; } }';
     save();
   }
 
   function bindOption(id, key, kind) {
     var el = $(id);
-    if (kind === 'check') el.checked = state[key];
-    else el.value = state[key];
+    if (kind === 'check') el.checked = state[key]; else el.value = state[key];
     el.addEventListener('change', function () {
       state[key] = kind === 'check' ? el.checked : (kind === 'num' ? +el.value : el.value);
       refresh();
@@ -481,6 +637,13 @@
 
   $('print').addEventListener('click', function () { window.print(); });
   window.addEventListener('resize', fitToStage);
+
+  // Embedded previews cannot drive a real print dialog; say so rather than fail silently.
+  try {
+    if (window.self !== window.top) $('frameNotice').classList.add('on');
+  } catch (e) {
+    $('frameNotice').classList.add('on');
+  }
 
   load();
   buildSlots();
