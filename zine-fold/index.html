@@ -323,6 +323,18 @@
   }
   .folds b { color: var(--ink); font-weight: 600; }
 
+  /* ---- site footer ---- */
+  .site-footer {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px;
+    margin-top: 56px; padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-2); font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: .04em;
+  }
+  .site-footer p { margin: 0; }
+  .site-footer a { color: var(--blue); text-underline-offset: 3px; }
+  .site-footer a:hover { color: var(--pink); }
+
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
@@ -476,6 +488,11 @@
 
     </div>
   </div>
+
+  <footer class="site-footer no-print">
+    <p>© 2026 catcatcatcat · 程式碼以 <a href="../LICENSE">MIT License</a> 釋出</p>
+    <a href="https://toolbox.catcatcatcat.cc/">← 貓貓工具箱</a>
+  </footer>
 </div>
 
 <script>
