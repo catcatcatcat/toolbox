@@ -146,6 +146,11 @@
     transition: border-color .12s, background-color .12s;
   }
   .slot-drop:hover { border-color: var(--blue); }
+  .slot.is-drop-target .slot-drop {
+    border: 2px dashed var(--pink); background-color: var(--surface-2); color: var(--pink);
+  }
+  .dropzone { position: relative; }
+  .dropzone.is-drop-target { outline: 2px dashed var(--pink); outline-offset: 10px; }
   .slot.is-filled .slot-drop { border: 1px solid var(--pink); }
   .slot.is-filled .slot-label { color: var(--pink); }
   .slot-clear {
@@ -309,10 +314,11 @@
     <!-- ============ input column ============ -->
     <div class="col no-print">
 
-      <section class="block">
+      <section class="block dropzone" id="dropzone">
         <div class="block-head"><span class="step">01</span><h2>放入 8 張頁面圖</h2></div>
         <p class="note">
           一次選 8 個檔即可，會依檔名數字排序填入，所以建議命名成 <code>1.png</code> ～ <code>8.png</code>。
+          也可以把圖片直接<strong>拖進來</strong>——拖到整區從第 1 頁開始填，拖到某一格就從那格開始填。
           每頁比例最好接近 A7 直式（74 × 105 mm）。
         </p>
         <div class="filebar">
@@ -471,6 +477,7 @@
           delete images[page];
           refresh();
         });
+        wireDrop(el, page);
         host.appendChild(el);
       })(p);
     }
@@ -499,12 +506,59 @@
     fr.readAsDataURL(file);
   }
 
-  $('bulk').addEventListener('change', function (e) {
-    var files = Array.prototype.slice.call(e.target.files);
-    files.sort(function (a, b) {
-      return a.name.localeCompare(b.name, undefined, { numeric: true });
+  // Files arrive from three places (bulk picker, slot picker, drag & drop) and are
+  // always ordered by the numbers in their names, so 1.png ~ 8.png lands in order.
+  function sortedImages(fileList) {
+    return Array.prototype.slice.call(fileList || [])
+      .filter(function (f) { return f.type.indexOf('image/') === 0; })
+      .sort(function (a, b) {
+        return a.name.localeCompare(b.name, undefined, { numeric: true });
+      });
+  }
+
+  function fillFrom(startPage, files) {
+    files.slice(0, 9 - startPage).forEach(function (f, i) { readInto(startPage + i, f); });
+  }
+
+  // dragenter/dragleave also fire for child elements, so count depth instead of
+  // clearing the highlight on the first leave.
+  function wireDrop(el, startPage) {
+    var depth = 0;
+    function mark(on) { el.classList.toggle('is-drop-target', on); }
+    el.addEventListener('dragenter', function (e) {
+      e.preventDefault();
+      depth++;
+      mark(true);
     });
-    files.slice(0, 8).forEach(function (f, i) { readInto(i + 1, f); });
+    el.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    });
+    el.addEventListener('dragleave', function () {
+      depth = Math.max(0, depth - 1);
+      if (!depth) mark(false);
+    });
+    el.addEventListener('drop', function (e) {
+      // A drop fires no dragleave, so reset here — including when an inner slot
+      // already took the files and this is only the surrounding zone catching
+      // the bubbled event.
+      depth = 0;
+      mark(false);
+      if (e.defaultPrevented) return;
+      e.preventDefault();
+      fillFrom(startPage, sortedImages(e.dataTransfer.files));
+    });
+  }
+
+  wireDrop($('dropzone'), 1);
+
+  // A miss outside the drop zones would otherwise make the browser navigate to
+  // the dropped image and lose the work in progress.
+  window.addEventListener('dragover', function (e) { e.preventDefault(); });
+  window.addEventListener('drop', function (e) { e.preventDefault(); });
+
+  $('bulk').addEventListener('change', function (e) {
+    fillFrom(1, sortedImages(e.target.files));
     e.target.value = '';
   });
 
