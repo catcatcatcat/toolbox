@@ -1,0 +1,26 @@
+[
+  {
+    "family": "Archivo",
+    "weight": "500 700",
+    "file": "archivo-500-700.woff2",
+    "sha256": "7150c0ec5ad356453013d11affec1fbab95de0dd2dcecb043b4f1cb7f87c4ba4"
+  },
+  {
+    "family": "IBM Plex Mono",
+    "weight": "400",
+    "file": "ibm-plex-mono-400.woff2",
+    "sha256": "c36f509c0a8f9f85f29cb44bc8701d8a9e0b14c499e77a884f789ead7093a7ac"
+  },
+  {
+    "family": "IBM Plex Mono",
+    "weight": "500",
+    "file": "ibm-plex-mono-500.woff2",
+    "sha256": "a76f53ca6612e7b3828eec2311098675b7f9849ae4169a8bcef6302aec02a6c0"
+  },
+  {
+    "family": "IBM Plex Sans",
+    "weight": "400 600",
+    "file": "ibm-plex-sans-400-600.woff2",
+    "sha256": "056e4e2459f57a0033c8c9c844ff19d6e42ac8602027803d4345823bcc939818"
+  }
+]
