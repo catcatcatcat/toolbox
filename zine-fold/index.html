@@ -160,6 +160,32 @@
     visibility: hidden;
   }
   .slot.is-filled .slot-clear { visibility: visible; }
+  .slot-tune-btn {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .05em;
+    background: none; border: 0; color: var(--ink-2);
+    cursor: pointer; padding: 0; text-decoration: underline;
+    visibility: hidden;
+  }
+  .slot.is-filled .slot-tune-btn { visibility: visible; }
+  .slot.is-tuned .slot-tune-btn { color: var(--pink); }
+  .slot-tune {
+    display: none; flex-direction: column; gap: 5px;
+    background: var(--surface); border: 1px solid var(--rule);
+    padding: 7px 8px;
+  }
+  .slot.is-open .slot-tune { display: flex; }
+  .slot-tune .row {
+    display: grid; grid-template-columns: 1.6em minmax(0, 1fr) 3.2em; gap: 5px;
+    align-items: center;
+    font-family: var(--font-mono); font-size: 10px; color: var(--ink-2);
+  }
+  .slot-tune .row output { text-align: right; font-variant-numeric: tabular-nums; }
+  .slot-tune input[type=range] { width: 100%; accent-color: var(--pink); margin: 0; }
+  .slot-tune .reset {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .05em;
+    background: none; border: 0; color: var(--blue);
+    cursor: pointer; padding: 0; text-decoration: underline; align-self: flex-start;
+  }
 
   .filebar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
   input[type=file]::file-selector-button {
@@ -221,8 +247,11 @@
     position: absolute; inset: var(--inset, 0);
     background-repeat: no-repeat; background-position: center;
     background-size: var(--fit, cover);
+    /* rotation first, so the nudge is read in the printed page's own frame:
+       "up" moves toward the top of the page, not the top of the sheet. */
+    transform: var(--rot, rotate(0deg)) translate(var(--dx, 0%), var(--dy, 0%)) scale(var(--sc, 1));
   }
-  .cell.is-rot .art { transform: rotate(180deg); }
+  .cell.is-rot .art { --rot: rotate(180deg); }
   .mark {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -439,7 +468,10 @@
   var state = {
     cells: clone(PRESETS.A),
     mode: 'art', fit: 'cover', inset: 0,
-    guidesOn: true, guidesPrint: false
+    guidesOn: true, guidesPrint: false,
+    // page number -> { s: zoom %, x: nudge %, y: nudge % }; only pages the user
+    // actually touched are kept, so the stored settings stay small and readable.
+    tune: {}
   };
   var images = {}; // page number (1-8) -> data URL; mirrored into IndexedDB below
 
@@ -506,6 +538,21 @@
   }
 
   function clone(v) { return JSON.parse(JSON.stringify(v)); }
+  var TUNE_ZERO = { s: 100, x: 0, y: 0 };
+  function tuneOf(p) {
+    var t = state.tune[p];
+    return t ? { s: t.s, x: t.x, y: t.y } : { s: 100, x: 0, y: 0 };
+  }
+  function isTuned(p) {
+    var t = tuneOf(p);
+    return t.s !== TUNE_ZERO.s || t.x !== TUNE_ZERO.x || t.y !== TUNE_ZERO.y;
+  }
+  function setTune(p, key, value) {
+    var t = tuneOf(p);
+    t[key] = value;
+    if (t.s === TUNE_ZERO.s && t.x === TUNE_ZERO.x && t.y === TUNE_ZERO.y) delete state.tune[p];
+    else state.tune[p] = t;
+  }
   function $(id) { return document.getElementById(id); }
   function roleOf(p) { return p === 1 ? '封面' : p === 8 ? '封底' : 'P' + p; }
   function longRoleOf(p) { return p === 1 ? '封面' : p === 8 ? '封底' : '第 ' + p + ' 頁'; }
@@ -520,6 +567,62 @@
     } catch (e) { /* storage unavailable or settings corrupt */ }
   }
 
+  // ---------- per-page nudge ----------
+  // Sliders rather than number boxes: this is a "does it look right" judgement
+  // made against the sheet preview, not a value anyone knows in advance.
+  var TUNE_ROWS = [
+    { key: 's', cap: '大', min: 50, max: 300, step: 1, unit: '%' },
+    { key: 'x', cap: '←→', min: -50, max: 50, step: 1, unit: '%' },
+    { key: 'y', cap: '↑↓', min: -50, max: 50, step: 1, unit: '%' }
+  ];
+
+  function tunePanel(page) {
+    var t = tuneOf(page), html = '<div class="slot-tune">';
+    TUNE_ROWS.forEach(function (row) {
+      html +=
+        '<label class="row"><span>' + row.cap + '</span>' +
+        '<input type="range" data-tune="' + row.key + '" min="' + row.min + '" max="' + row.max +
+        '" step="' + row.step + '" value="' + t[row.key] + '"' +
+        ' aria-label="' + longRoleOf(page) + ' ' + row.cap + '">' +
+        '<output>' + t[row.key] + row.unit + '</output></label>';
+    });
+    return html + '<button class="reset" type="button">重設這一頁</button></div>';
+  }
+
+  function wireTune(el, page) {
+    Array.prototype.forEach.call(el.querySelectorAll('[data-tune]'), function (input) {
+      var key = input.getAttribute('data-tune');
+      var out = input.parentNode.querySelector('output');
+      var unit = key === 's' ? '%' : '%';
+      // 'input' rather than 'change': the preview should track the thumb live.
+      input.addEventListener('input', function () {
+        setTune(page, key, +input.value);
+        out.textContent = input.value + unit;
+        el.classList.toggle('is-tuned', isTuned(page));
+        paintSheet();
+        save();
+      });
+    });
+    el.querySelector('.slot-tune .reset').addEventListener('click', function () {
+      dropTune(page);
+      refresh();
+    });
+  }
+
+  // A nudge belongs to the picture that was cropped, not to the slot, so losing
+  // the picture has to lose the nudge — otherwise the next image dropped there
+  // silently inherits someone else's crop.
+  function dropTune(page) {
+    delete state.tune[page];
+    var el = $('slots').children[page - 1];
+    if (!el) return;
+    Array.prototype.forEach.call(el.querySelectorAll('[data-tune]'), function (input) {
+      input.value = tuneOf(page)[input.getAttribute('data-tune')];
+      input.parentNode.querySelector('output').textContent = input.value + '%';
+    });
+    el.classList.remove('is-tuned');
+  }
+
   // ---------- page slots ----------
   function buildSlots() {
     var host = $('slots');
@@ -530,8 +633,10 @@
         el.className = 'slot';
         el.innerHTML =
           '<div class="slot-label"><span>' + roleOf(page) + '</span>' +
-          '<button class="slot-clear" type="button">清除</button></div>' +
-          '<button class="slot-drop" type="button" aria-label="選擇' + longRoleOf(page) + '的圖片">+</button>';
+          '<span><button class="slot-tune-btn" type="button">微調</button>' +
+          ' <button class="slot-clear" type="button">清除</button></span></div>' +
+          '<button class="slot-drop" type="button" aria-label="選擇' + longRoleOf(page) + '的圖片">+</button>' +
+          tunePanel(page);
 
         var input = document.createElement('input');
         input.type = 'file';
@@ -546,8 +651,13 @@
         el.querySelector('.slot-clear').addEventListener('click', function () {
           delete images[page];
           dbDelete(page);
+          dropTune(page);
           refresh();
         });
+        el.querySelector('.slot-tune-btn').addEventListener('click', function () {
+          el.classList.toggle('is-open');
+        });
+        wireTune(el, page);
         wireDrop(el, page);
         host.appendChild(el);
       })(p);
@@ -559,6 +669,8 @@
     for (var p = 1; p <= 8; p++) {
       var el = nodes[p - 1];
       var drop = el.querySelector('.slot-drop');
+      el.classList.toggle('is-tuned', isTuned(p));
+      if (!images[p]) el.classList.remove('is-open');
       if (images[p]) {
         el.classList.add('is-filled');
         drop.style.backgroundImage = 'url("' + images[p] + '")';
@@ -640,6 +752,7 @@
   $('clearAll').addEventListener('click', function () {
     images = {};
     dbClear();
+    for (var p = 1; p <= 8; p++) dropTune(p);
     refresh();
   });
 
@@ -705,6 +818,10 @@
         art.className = 'art';
         art.style.setProperty('--inset', state.inset + 'mm');
         art.style.setProperty('--fit', state.fit);
+        var t = tuneOf(cell.p);
+        art.style.setProperty('--sc', t.s / 100);
+        art.style.setProperty('--dx', t.x + '%');
+        art.style.setProperty('--dy', t.y + '%');
         if (images[cell.p]) art.style.backgroundImage = 'url("' + images[cell.p] + '")';
         el.appendChild(art);
       }
