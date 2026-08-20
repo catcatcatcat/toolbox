@@ -237,11 +237,20 @@
   /* ---- the sheet: A4 landscape, 297 x 210 mm ---- */
   .stage { overflow: hidden; }
   .sheet {
-    position: relative; width: 297mm; height: 210mm;
+    position: relative; width: 297mm; height: 210mm; overflow: hidden;
     background: var(--paper);
     transform: scale(var(--s, 1)); transform-origin: top left;
     box-shadow: 0 1px 3px rgba(0,0,0,.18), 0 10px 30px rgba(0,0,0,.10);
   }
+  /* The plate holds the imposition at true A4 size; shrinking it (rather than the
+     sheet) leaves a white border the printer can actually reach, and leaves the
+     sheet's own coordinate space free for the crop marks. */
+  .plate {
+    position: absolute; left: 0; top: 0; width: 297mm; height: 210mm;
+    transform: scale(var(--shrink, 1)); transform-origin: center center;
+  }
+  .crops { position: absolute; inset: 0; pointer-events: none; }
+  .crops i { position: absolute; background: var(--paper-ink); }
   .cell { position: absolute; width: 74.25mm; height: 105mm; overflow: hidden; }
   .cell .art {
     position: absolute; inset: var(--inset, 0);
@@ -386,13 +395,27 @@
             <span class="cap">每頁內縮 mm</span>
             <input type="number" id="inset" min="0" max="15" step="0.5" value="0">
           </label>
+          <label class="field">
+            <span class="cap">留白邊界 mm</span>
+            <input type="number" id="margin" min="0" max="15" step="0.5" value="0">
+          </label>
+          <label class="field">
+            <span class="cap">出血 mm</span>
+            <input type="number" id="bleed" min="0" max="10" step="0.5" value="0">
+          </label>
           <div class="field">
             <span class="cap">輔助線</span>
             <div class="checks">
               <label class="check"><input type="checkbox" id="guidesOn" checked> 畫面顯示折線與切線</label>
               <label class="check"><input type="checkbox" id="guidesPrint"> 列印時一起印出</label>
+              <label class="check"><input type="checkbox" id="cropsOn"> 印裁切標記（要先留白邊界）</label>
             </div>
           </div>
+          <p class="note" style="grid-column:1/-1">
+            家用印表機印不到紙的最邊緣。<b>留白邊界</b>把整張版面等比縮小、四周空出白邊，
+            印完照<b>裁切標記</b>把紙裁掉，成品比 A4 小一點但邊到邊都是圖。
+            <b>出血</b>讓最外圈的圖多長出去一點，裁歪了也不會露出白邊。
+          </p>
         </div>
       </section>
 
@@ -421,9 +444,9 @@
           <span style="color:var(--pink)">■</span> 紅線是要剪的那一刀，只剪中央兩格的寬度，不要剪穿整張紙。
           灰虛線是折線。
         </p>
-        <div class="stage" id="stage"><div class="sheet" id="sheet"><div class="guides" id="guides"></div></div></div>
+        <div class="stage" id="stage"><div class="sheet" id="sheet"><div class="plate" id="plate"><div class="guides" id="guides"></div></div><div class="crops" id="crops"></div></div></div>
         <div class="caliper no-print">
-          <span>A4 297 × 210 mm · 橫向</span>
+          <span id="caliperSize">A4 297 × 210 mm · 橫向</span>
           <span>8 格 · 每格 74.25 × 105 mm</span>
         </div>
         <div class="printbar no-print">
@@ -468,6 +491,7 @@
   var state = {
     cells: clone(PRESETS.A),
     mode: 'art', fit: 'cover', inset: 0,
+    margin: 0, bleed: 0, cropsOn: false,
     guidesOn: true, guidesPrint: false,
     // page number -> { s: zoom %, x: nudge %, y: nudge % }; only pages the user
     // actually touched are kept, so the stored settings stay small and readable.
@@ -797,14 +821,25 @@
 
   // ---------- sheet ----------
   function paintSheet() {
-    var sheet = $('sheet');
-    Array.prototype.forEach.call(sheet.querySelectorAll('.cell'), function (n) { n.remove(); });
+    var plate = $('plate');
+    Array.prototype.forEach.call(plate.querySelectorAll('.cell'), function (n) { n.remove(); });
+
+    // Bleed grows the outermost cells outward only. The inner edges are folds, not
+    // cuts, so spilling art across them would print a neighbouring page past the
+    // crease. The test page ignores bleed: it is the calibration reference.
+    var b = state.mode === 'test' ? 0 : Math.max(0, state.bleed);
 
     state.cells.forEach(function (cell, i) {
+      var col = i % 4, row = i < 4 ? 0 : 1;
+      var bl = col === 0 ? b : 0, br = col === 3 ? b : 0;
+      var bt = row === 0 ? b : 0, bb = row === 1 ? b : 0;
+
       var el = document.createElement('div');
       el.className = 'cell' + (cell.r ? ' is-rot' : '');
-      el.style.left = (i % 4) * CELL_W + 'mm';
-      el.style.top = (i < 4 ? 0 : CELL_H) + 'mm';
+      el.style.left = (col * CELL_W - bl) + 'mm';
+      el.style.top = (row * CELL_H - bt) + 'mm';
+      el.style.width = (CELL_W + bl + br) + 'mm';
+      el.style.height = (CELL_H + bt + bb) + 'mm';
 
       if (state.mode === 'test') {
         el.innerHTML =
@@ -825,7 +860,50 @@
         if (images[cell.p]) art.style.backgroundImage = 'url("' + images[cell.p] + '")';
         el.appendChild(art);
       }
-      sheet.insertBefore(el, $('guides'));
+      plate.insertBefore(el, $('guides'));
+    });
+  }
+
+  // ---------- trim margin and crop marks ----------
+  // The vertical edge is the tighter one, so scaling by it guarantees at least the
+  // requested margin on all four sides (the long sides simply get a little more).
+  function shrinkOf() {
+    var m = Math.max(0, state.margin);
+    return m > 0 ? Math.max(0.5, (SHEET_H - 2 * m) / SHEET_H) : 1;
+  }
+
+  function trimBox() {
+    var k = shrinkOf();
+    var w = SHEET_W * k, h = SHEET_H * k;
+    return { x: (SHEET_W - w) / 2, y: (SHEET_H - h) / 2, w: w, h: h, k: k };
+  }
+
+  function paintCrops() {
+    var c = $('crops');
+    c.innerHTML = '';
+    var on = state.cropsOn && state.margin > 0;
+    c.style.display = on ? 'block' : 'none';
+    if (!on) return;
+
+    var t = trimBox();
+    var gap = 0.6, len = Math.max(2, Math.min(6, t.y - gap - 0.3)), th = 0.25;
+    var xs = [t.x, t.x + t.w], ys = [t.y, t.y + t.h];
+
+    function bar(left, top, w, h) {
+      var d = document.createElement('i');
+      d.style.left = left + 'mm'; d.style.top = top + 'mm';
+      d.style.width = w + 'mm'; d.style.height = h + 'mm';
+      c.appendChild(d);
+    }
+
+    xs.forEach(function (x, xi) {
+      ys.forEach(function (y, yi) {
+        var outX = xi === 0 ? -1 : 1, outY = yi === 0 ? -1 : 1;
+        // horizontal arm, running away from the trim corner
+        bar(outX < 0 ? x - gap - len : x + gap, y - th / 2, len, th);
+        // vertical arm
+        bar(x - th / 2, outY < 0 ? y - gap - len : y + gap, th, len);
+      });
     });
   }
 
@@ -871,12 +949,20 @@
     paintSlots();
     paintSheet();
     paintGuides();
+    var t = trimBox();
+    $('plate').style.setProperty('--shrink', t.k);
+    paintCrops();
+    $('caliperSize').textContent = t.k < 1
+      ? 'A4 橫向 · 裁切後 ' + round1(t.w) + ' × ' + round1(t.h) + ' mm'
+      : 'A4 297 × 210 mm · 橫向';
     fitToStage();
     printStyle.textContent = state.guidesPrint
       ? ''
       : '@media print { .guides { display: none !important; } }';
     save();
   }
+
+  function round1(v) { return Math.round(v * 10) / 10; }
 
   function bindOption(id, key, kind) {
     var el = $(id);
@@ -903,6 +989,9 @@
   bindOption('mode', 'mode');
   bindOption('fit', 'fit');
   bindOption('inset', 'inset', 'num');
+  bindOption('margin', 'margin', 'num');
+  bindOption('bleed', 'bleed', 'num');
+  bindOption('cropsOn', 'cropsOn', 'check');
   bindOption('guidesOn', 'guidesOn', 'check');
   bindOption('guidesPrint', 'guidesPrint', 'check');
   refresh();
