@@ -79,11 +79,20 @@
 
   /* ---- masthead ---- */
   .masthead { padding: 44px 0 32px; border-bottom: 2px solid var(--ink); }
+  .masthead-top {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
+    gap: 10px 24px; margin-bottom: 12px;
+  }
   .eyebrow {
     font-family: var(--font-mono);
     font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
-    color: var(--pink); margin: 0 0 12px;
+    color: var(--pink); margin: 0;
   }
+  .home-link {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em;
+    color: var(--blue); text-underline-offset: 3px;
+  }
+  .home-link:hover { color: var(--pink); }
   .masthead h1 {
     font-family: var(--font-display);
     font-weight: 700; font-size: clamp(30px, 4.6vw, 46px);
@@ -358,7 +367,10 @@
 <div class="app">
 
   <header class="masthead no-print">
-    <p class="eyebrow">One-sheet zine · imposition</p>
+    <div class="masthead-top">
+      <p class="eyebrow">One-sheet zine · imposition</p>
+      <a class="home-link" href="https://toolbox.catcatcatcat.cc/" aria-label="回到貓貓工具箱首頁">← 貓貓工具箱</a>
+    </div>
     <h1>八折小誌拼版器</h1>
     <p class="lede">
       一張 A4、折三次、剪一刀，就是一本 8 頁小誌。你只管把每一頁排漂亮，
