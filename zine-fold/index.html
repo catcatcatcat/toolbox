@@ -169,6 +169,12 @@
     border: 1px solid var(--rule);
   }
   input[type=file] { font-size: 12.5px; color: var(--ink-2); max-width: 100%; }
+  .memo {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em;
+    color: var(--ink-2); margin: 0; min-height: 1.5em;
+  }
+  .memo b { color: var(--blue); font-weight: 500; }
+  .memo.is-warn b { color: var(--pink); }
 
   /* ---- form controls ---- */
   .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 18px 22px; }
@@ -320,11 +326,13 @@
           一次選 8 個檔即可，會依檔名數字排序填入，所以建議命名成 <code>1.png</code> ～ <code>8.png</code>。
           也可以把圖片直接<strong>拖進來</strong>——拖到整區從第 1 頁開始填，拖到某一格就從那格開始填。
           每頁比例最好接近 A7 直式（74 × 105 mm）。
+          圖片會留在這台電腦的瀏覽器裡，關掉分頁再回來還在；不想留就按「全部清空」。
         </p>
         <div class="filebar">
           <input type="file" id="bulk" accept="image/*" multiple>
           <button class="btn" id="clearAll" type="button">全部清空</button>
         </div>
+        <p class="memo" id="memo"></p>
         <div class="slots" id="slots"></div>
       </section>
 
@@ -433,7 +441,69 @@
     mode: 'art', fit: 'cover', inset: 0,
     guidesOn: true, guidesPrint: false
   };
-  var images = {}; // page number (1-8) -> data URL, kept in memory only
+  var images = {}; // page number (1-8) -> data URL; mirrored into IndexedDB below
+
+  // ---------- image persistence ----------
+  // localStorage tops out around 5 MB and only takes strings, which eight page
+  // scans blow through immediately, so the pictures live in IndexedDB instead.
+  // Every write is fire-and-forget: if the browser refuses (private mode, quota,
+  // no IndexedDB at all) the tool still works, it just forgets on reload.
+  var DB_NAME = 'zine-fold', DB_STORE = 'pages';
+  var dbFailed = false;
+
+  function withStore(mode, run) {
+    if (dbFailed || !window.indexedDB) { return; }
+    var req;
+    try { req = indexedDB.open(DB_NAME, 1); } catch (e) { dbFailed = true; return; }
+    req.onupgradeneeded = function () {
+      if (!req.result.objectStoreNames.contains(DB_STORE)) req.result.createObjectStore(DB_STORE);
+    };
+    req.onerror = function () { dbFailed = true; paintMemo(); };
+    req.onsuccess = function () {
+      var db = req.result;
+      var tx;
+      try { tx = db.transaction(DB_STORE, mode); } catch (e) { dbFailed = true; paintMemo(); return; }
+      tx.onerror = function () { dbFailed = true; paintMemo(); };
+      tx.oncomplete = function () { db.close(); };
+      run(tx.objectStore(DB_STORE));
+    };
+  }
+
+  function dbPut(page, dataUrl) { withStore('readwrite', function (st) { st.put(dataUrl, page); }); }
+  function dbDelete(page) { withStore('readwrite', function (st) { st['delete'](page); }); }
+  function dbClear() { withStore('readwrite', function (st) { st.clear(); }); }
+
+  function dbLoadAll(done) {
+    withStore('readonly', function (st) {
+      var got = {};
+      // openCursor rather than getAll: it is the one that every browser back to
+      // the original IndexedDB shipping version understands.
+      st.openCursor().onsuccess = function (e) {
+        var cur = e.target.result;
+        if (cur) {
+          if (typeof cur.value === 'string') got[+cur.key] = cur.value;
+          cur['continue']();
+        } else {
+          done(got);
+        }
+      };
+    });
+  }
+
+  function paintMemo() {
+    var el = $('memo');
+    if (!el) return;
+    var n = 0;
+    for (var p = 1; p <= 8; p++) if (images[p]) n++;
+    el.classList.toggle('is-warn', dbFailed);
+    if (dbFailed) {
+      el.innerHTML = '<b>這個瀏覽器不讓我存圖</b> · 工具照常用，但重新整理後要再選一次';
+    } else if (n) {
+      el.innerHTML = '已放入 <b>' + n + '/8</b> 頁 · 已記在這台電腦，關掉分頁再回來還在';
+    } else {
+      el.textContent = '';
+    }
+  }
 
   function clone(v) { return JSON.parse(JSON.stringify(v)); }
   function $(id) { return document.getElementById(id); }
@@ -475,6 +545,7 @@
         });
         el.querySelector('.slot-clear').addEventListener('click', function () {
           delete images[page];
+          dbDelete(page);
           refresh();
         });
         wireDrop(el, page);
@@ -502,7 +573,11 @@
 
   function readInto(page, file) {
     var fr = new FileReader();
-    fr.onload = function () { images[page] = fr.result; refresh(); };
+    fr.onload = function () {
+      images[page] = fr.result;
+      dbPut(page, fr.result);
+      refresh();
+    };
     fr.readAsDataURL(file);
   }
 
@@ -562,7 +637,11 @@
     e.target.value = '';
   });
 
-  $('clearAll').addEventListener('click', function () { images = {}; refresh(); });
+  $('clearAll').addEventListener('click', function () {
+    images = {};
+    dbClear();
+    refresh();
+  });
 
   // ---------- mapping editor ----------
   function buildMapGrid() {
@@ -671,6 +750,7 @@
   document.head.appendChild(printStyle);
 
   function refresh() {
+    paintMemo();
     paintSlots();
     paintSheet();
     paintGuides();
@@ -709,6 +789,16 @@
   bindOption('guidesOn', 'guidesOn', 'check');
   bindOption('guidesPrint', 'guidesPrint', 'check');
   refresh();
+
+  // Pictures come back asynchronously; anything the user picks in the meantime
+  // wins, so only fill the slots that are still empty.
+  dbLoadAll(function (saved) {
+    var restored = false;
+    for (var p = 1; p <= 8; p++) {
+      if (saved[p] && !images[p]) { images[p] = saved[p]; restored = true; }
+    }
+    if (restored) refresh();
+  });
 })();
 </script>
 </body>
