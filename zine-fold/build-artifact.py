@@ -2,9 +2,10 @@
 """Strip the document wrapper off index.html so it can be published as an Artifact.
 
 The Artifact host wraps the uploaded file in its own <!doctype>/<head>/<body>
-skeleton, so the published file must carry only the content: <title>, the font
-<link>, the <style>, and the markup. Keeping this a build step means there is
-exactly one source of truth (index.html) instead of two diverging copies.
+skeleton, so the published file must carry only the content: <title>, the
+<style> blocks (including the embedded fonts), and the markup. Keeping this a
+build step means there is exactly one source of truth (index.html) instead of
+two diverging copies.
 
 Usage: python3 build-artifact.py <output.html>
 """
