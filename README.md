@@ -9,6 +9,7 @@
 | 路徑 | 說明 |
 |---|---|
 | [`zine-fold/`](zine-fold/) | 八折小誌拼版器——把 8 張頁面圖排進一張 A4 橫向紙，列印後折三次、剪一刀就是一本 8 頁小誌 |
+| [`id-photo-sheet/`](id-photo-sheet/) | 證明寫真風相紙產生器——一張照片排成 2×4 八格相紙，可調姓名、日期、用途與流水號 |
 
 ## 做法
 
@@ -23,11 +24,13 @@ python3 -m http.server 4180
 
 ## 隱私
 
-工具不會把你的檔案送到任何地方。程式碼裡沒有 `fetch`、沒有 `XMLHttpRequest`、沒有後端，
-設定留在 `localStorage`、圖片留在 `IndexedDB`，兩者都在你自己的瀏覽器裡。
+工具不會把你的檔案送到任何地方。程式碼裡沒有 `fetch`、沒有 `XMLHttpRequest`、沒有後端。
+需要跨次記憶的 zine-fold 設定留在 `localStorage`、頁面圖片留在 `IndexedDB`；id-photo-sheet
+連照片都不保存，關閉分頁即清除。這些資料都只存在使用者自己的瀏覽器裡。
 
-**零第三方請求**：字型直接內嵌在 HTML 裡，不走 Google Fonts CDN，所以沒有任何一個
-外部網域會看到訪客 IP。頁面存成本機檔案後離線打開，外觀與功能完全一樣。
+**工具資料留在瀏覽器裡**：字型直接內嵌在 HTML 裡，不走 Google Fonts CDN；目前工具頁
+沒有第三方請求。即使未來加入廣告，使用者放進工具的圖片、文字與檔案也不會交給廣告服務。
+頁面存成本機檔案後離線打開，核心功能與外觀仍可使用。
 
 自己驗證：開發者工具 Network 分頁重新整理頁面，除了頁面本身不該出現任何請求；
 或在 Console 執行 `performance.getEntriesByType('resource')`，應該回傳空陣列。
