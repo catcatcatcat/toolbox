@@ -597,7 +597,18 @@
     setFont(size, weight);
     const chars = [...text];
     chars.forEach((char, i) => {
-      ctx.fillText(char, x, y + i * (size + spacing));
+      const charY = y + i * (size + spacing);
+      if (char === 'ー') {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = Math.max(2, size * .09);
+        ctx.lineCap = 'square';
+        ctx.moveTo(x + size * .5, charY - size * .82);
+        ctx.lineTo(x + size * .5, charY - size * .12);
+        ctx.stroke();
+      } else {
+        ctx.fillText(char, x, charY);
+      }
     });
     ctx.restore();
   }
