@@ -104,171 +104,14 @@
     justify-items: center;
     gap: 10px;
   }
-  .photo-booth {
-    position: relative;
-    width: 166px;
-    padding: 8px;
-    border: 3px solid var(--ink);
-    background: var(--blue);
-    box-shadow: 7px 7px 0 var(--pink);
-    color: #17233c;
-    image-rendering: pixelated;
-  }
-  .booth-sign {
-    height: 27px;
-    display: grid;
-    place-items: center;
-    border: 2px solid #17233c;
-    background: #fff8ed;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .12em;
-    line-height: 1;
-  }
-  .booth-body {
-    display: grid;
-    grid-template-columns: 54px 1fr;
-    height: 112px;
-    margin-top: 6px;
-    border: 2px solid #17233c;
-    background: #eef8ff;
-  }
-  .booth-curtain {
-    position: relative;
-    overflow: hidden;
-    border-right: 3px solid #17233c;
-    background: repeating-linear-gradient(90deg, #ff6fa8 0 9px, #d9387a 9px 13px);
-  }
-  .booth-curtain::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 9px;
-    background: #17233c;
-  }
-  .booth-curtain::after {
-    content: "";
-    position: absolute;
-    right: -1px;
-    top: 45px;
-    width: 17px;
-    height: 10px;
-    border: 2px solid #17233c;
-    background: #ffd54a;
-  }
-  .booth-console { padding: 8px 7px 6px; background: #f1f7f8; }
-  .booth-screen {
-    position: relative;
-    height: 61px;
-    border: 3px solid #17233c;
-    background: #40b8ed;
-  }
-  .pixel-cat {
-    position: absolute;
-    left: 50%;
-    top: 3px;
-    width: 50px;
-    height: 50px;
-    transform: translateX(-50%);
-  }
-  .pixel-cat i, .pixel-cat b {
-    position: absolute;
+  .photo-booth-image {
     display: block;
-    font-style: normal;
-  }
-  .cat-ear {
-    z-index: 1;
-    top: 1px;
-    width: 14px;
-    height: 15px;
-    background: #17233c;
-    clip-path: polygon(0 100%, 0 53%, 29% 53%, 29% 27%, 57% 27%, 57% 0, 100% 100%);
-  }
-  .cat-ear-left { left: 6px; }
-  .cat-ear-right { right: 6px; transform: scaleX(-1); }
-  .cat-head {
-    z-index: 3;
-    left: 5px;
-    top: 10px;
-    width: 40px;
-    height: 28px;
-    border: 4px solid #17233c;
-    background: #ffe0c2;
-  }
-  .cat-eyes {
-    left: 6px;
-    top: 6px;
-    width: 5px;
-    height: 5px;
-    background: #17233c;
-    box-shadow: 17px 0 0 #17233c;
-  }
-  .cat-nose {
-    left: 50%;
-    top: 13px;
-    width: 4px;
-    height: 4px;
-    transform: translateX(-50%);
-    background: #d9387a;
-  }
-  .cat-nose::after {
-    content: "";
-    position: absolute;
-    left: -9px;
-    top: 5px;
-    width: 7px;
-    height: 2px;
-    background: #17233c;
-    box-shadow: 15px 0 0 #17233c;
-  }
-  .cat-body {
-    z-index: 2;
-    left: 12px;
-    top: 34px;
-    width: 27px;
-    height: 16px;
-    border: 4px solid #17233c;
-    background: #fff8ed;
-  }
-  .cat-tail {
-    z-index: 1;
-    right: 1px;
-    top: 37px;
-    width: 13px;
-    height: 5px;
-    background: #17233c;
-    box-shadow: 7px -5px 0 #17233c, 7px -10px 0 #17233c;
-  }
-  .booth-button {
-    width: 18px;
-    height: 9px;
-    margin: 7px auto 0;
-    border: 2px solid #17233c;
-    background: #ff6fa8;
-  }
-  .booth-slot {
-    width: 48px;
-    height: 8px;
-    margin: 6px auto 0;
-    background: #17233c;
-    box-shadow: 0 3px 0 #94a7b5;
-  }
-  .booth-feet {
-    position: absolute;
-    left: 13px;
-    right: 13px;
-    bottom: -10px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .booth-feet::before, .booth-feet::after {
-    content: "";
-    width: 19px;
-    height: 8px;
+    width: 196px;
+    height: 196px;
     border: 3px solid var(--ink);
-    border-top: 0;
-    background: var(--blue);
+    background: #111727;
+    box-shadow: 7px 7px 0 var(--pink);
+    object-fit: cover;
   }
   .privacy-badge {
     padding: 8px 11px;
@@ -430,9 +273,7 @@
       margin-top: 22px;
       padding: 0 7px 7px 0;
     }
-    .photo-booth { width: 142px; }
-    .booth-body { grid-template-columns: 46px 1fr; height: 100px; }
-    .booth-screen { height: 54px; }
+    .photo-booth-image { width: 152px; height: 152px; }
     .privacy-badge { align-self: center; }
     .workspace { gap: 18px; padding-top: 18px; }
     .controls { display: block; padding: 16px; }
@@ -456,26 +297,7 @@
       <p class="lede">上傳一張照片，排成日本證明寫真機風格的八格相片</p>
     </div>
     <div class="hero-visual">
-      <div class="photo-booth" role="img" aria-label="螢幕顯示貓咪的像素風日本證明寫真機插圖">
-        <div class="booth-sign" aria-hidden="true">証明写真</div>
-        <div class="booth-body" aria-hidden="true">
-          <div class="booth-curtain"></div>
-          <div class="booth-console">
-            <div class="booth-screen">
-              <span class="pixel-cat">
-                <i class="cat-ear cat-ear-left"></i>
-                <i class="cat-ear cat-ear-right"></i>
-                <i class="cat-body"></i>
-                <i class="cat-tail"></i>
-                <i class="cat-head"><b class="cat-eyes"></b><b class="cat-nose"></b></i>
-              </span>
-            </div>
-            <div class="booth-button"></div>
-            <div class="booth-slot"></div>
-          </div>
-        </div>
-        <div class="booth-feet" aria-hidden="true"></div>
-      </div>
+      <img class="photo-booth-image" src="./pixel-photo-booth.webp" width="512" height="512" alt="粉紅色證明寫真機裡坐著一隻像素風灰白貓咪">
       <span class="privacy-badge">LOCAL ONLY · 不上傳</span>
     </div>
   </header>
