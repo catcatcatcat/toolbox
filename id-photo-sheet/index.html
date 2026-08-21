@@ -380,6 +380,10 @@
           </label>
         </div>
         <label class="check"><input id="showReceipt" type="checkbox" checked><span>顯示收據風裝飾</span></label>
+        <label class="field" id="receiptAmountField">
+          <span>收據金額（円）</span>
+          <input id="receiptAmount" type="number" min="0" max="999999" step="1" value="1000" inputmode="numeric">
+        </label>
       </div>
 
       <div class="section">
@@ -443,7 +447,8 @@
     purposeCustom: $('purposeCustom'), purposeCustomField: $('purposeCustomField'), photoSize: $('photoSize'),
     dateMode: $('dateMode'), customDate: $('customDate'), dateCustomField: $('dateCustomField'),
     serialMode: $('serialMode'), customSerial: $('customSerial'), serialCustomField: $('serialCustomField'),
-    showReceipt: $('showReceipt'), noticeStyle: $('noticeStyle'), canvasWrap: $('canvasWrap'),
+    showReceipt: $('showReceipt'), receiptAmount: $('receiptAmount'), receiptAmountField: $('receiptAmountField'),
+    noticeStyle: $('noticeStyle'), canvasWrap: $('canvasWrap'),
     canvasHelp: $('canvasHelp'), clearPhoto: $('clearPhoto'), download: $('download'), status: $('status')
   };
 
@@ -471,6 +476,12 @@
     if (!value) return '';
     const parts = value.split('-');
     return parts.length === 3 ? `${parts[0]}.${parts[1]}.${parts[2]}` : value;
+  }
+
+  function selectedReceiptAmount() {
+    const amount = Number.parseInt(ui.receiptAmount.value, 10);
+    if (!Number.isFinite(amount)) return 0;
+    return Math.max(0, Math.min(999999, amount));
   }
 
   function localToday() {
@@ -679,8 +690,14 @@
       ctx.strokeStyle = 'rgba(65, 91, 115, .35)';
       ctx.strokeRect(1090, 989, 265, 43);
       ctx.fillStyle = '#526b80';
-      setFont(11, 500, 'mono');
-      ctx.fillText('RECEIPT  ¥1,000  CATCAT PHOTO SERVICE', 1102, 1016);
+      const amount = selectedReceiptAmount().toLocaleString('en-US');
+      const receiptText = `RECEIPT  ¥${amount}  CATCAT PHOTO SERVICE`;
+      let receiptFontSize = 11;
+      do {
+        setFont(receiptFontSize, 500, 'mono');
+        receiptFontSize -= 1;
+      } while (receiptFontSize >= 8 && ctx.measureText(receiptText).width > 241);
+      ctx.fillText(receiptText, 1102, 1016);
     }
   }
 
@@ -702,6 +719,7 @@
     ui.purposeCustomField.hidden = ui.purpose.value !== 'custom';
     ui.dateCustomField.hidden = ui.dateMode.value !== 'custom';
     ui.serialCustomField.hidden = ui.serialMode.value !== 'custom';
+    ui.receiptAmountField.hidden = !ui.showReceipt.checked;
   }
 
   function resetCrop() {
@@ -797,11 +815,15 @@
   ui.canvasWrap.addEventListener('pointerup', endDrag);
   ui.canvasWrap.addEventListener('pointercancel', endDrag);
 
-  [ui.displayName, ui.purposeCustom, ui.customDate, ui.customSerial].forEach((element) => element.addEventListener('input', render));
+  [ui.displayName, ui.purposeCustom, ui.customDate, ui.customSerial, ui.receiptAmount].forEach((element) => element.addEventListener('input', render));
   [ui.purpose, ui.photoSize, ui.dateMode, ui.serialMode, ui.noticeStyle].forEach((element) => element.addEventListener('change', () => {
     syncConditionalFields(); render();
   }));
-  ui.showReceipt.addEventListener('change', render);
+  ui.showReceipt.addEventListener('change', () => { syncConditionalFields(); render(); });
+  ui.receiptAmount.addEventListener('change', () => {
+    ui.receiptAmount.value = String(selectedReceiptAmount());
+    render();
+  });
 
   ui.download.addEventListener('click', () => {
     render();
