@@ -242,6 +242,30 @@
   .button:disabled { cursor: not-allowed; opacity: .42; }
   .status { min-height: 1.4em; margin: 8px 0 0; color: var(--ink-2); font-size: 12px; text-align: right; }
 
+  .repo-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 32px;
+    padding: 20px 22px;
+    border: 1px solid var(--blue);
+    background: var(--blue-wash);
+  }
+  .repo-cta p { margin: 0; color: var(--ink-2); }
+  .repo-cta strong { display: block; margin-bottom: 3px; color: var(--ink); font-weight: 600; }
+  .repo-link {
+    flex: 0 0 auto;
+    padding: 10px 16px;
+    background: var(--blue);
+    color: var(--ground);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .repo-link:hover { background: var(--pink); }
+
   .site-footer {
     display: flex;
     justify-content: space-between;
@@ -282,6 +306,8 @@
     .actions { display: grid; grid-template-columns: 1fr 1fr; }
     .button { width: 100%; }
     .canvas-help { display: none; }
+    .repo-cta { display: block; }
+    .repo-link { display: inline-block; margin-top: 16px; }
     .site-footer { display: block; }
   }
 </style>
@@ -414,6 +440,14 @@
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </section>
   </main>
+
+  <aside class="repo-cta" aria-label="在 GitHub 支持貓貓工具箱">
+    <p>
+      <strong>覺得工具好用嗎？</strong>
+      歡迎到 GitHub 給貓貓工具箱一顆星星，支持我繼續做下去。
+    </p>
+    <a class="repo-link" href="https://github.com/catcatcatcat/toolbox" target="_blank" rel="noopener noreferrer">到 GitHub 給一顆星星 ★</a>
+  </aside>
 
   <footer class="site-footer">
     <span>© 2026 catcatcatcat · MIT License</span>
