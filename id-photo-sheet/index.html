@@ -164,35 +164,45 @@
     border: 3px solid #17233c;
     background: #40b8ed;
   }
-  .pixel-head {
+  .pixel-cat {
     position: absolute;
     left: 50%;
-    top: 11px;
-    width: 24px;
-    height: 22px;
+    top: 16px;
+    width: 30px;
+    height: 23px;
     transform: translateX(-50%);
     background: #ffe0c2;
-    box-shadow: -5px -5px 0 #17233c, 5px -5px 0 #17233c, -8px 3px 0 #17233c, 8px 3px 0 #17233c;
+    border: 4px solid #17233c;
   }
-  .pixel-head::before {
+  .pixel-cat::before {
     content: "";
     position: absolute;
-    left: 4px;
-    top: 9px;
-    width: 4px;
-    height: 4px;
+    left: -4px;
+    top: -10px;
+    width: 9px;
+    height: 9px;
     background: #17233c;
-    box-shadow: 12px 0 0 #17233c;
+    box-shadow: 21px 0 0 #17233c, 2px 2px 0 #ff9eaa, 23px 2px 0 #ff9eaa;
   }
-  .pixel-head::after {
+  .pixel-cat::after {
     content: "";
     position: absolute;
-    left: -10px;
-    top: 24px;
+    left: -11px;
+    top: 22px;
     width: 44px;
     height: 18px;
     background: #fff8ed;
     box-shadow: inset 0 0 0 3px #17233c;
+  }
+  .cat-face {
+    position: absolute;
+    z-index: 1;
+    left: 4px;
+    top: 7px;
+    width: 4px;
+    height: 4px;
+    background: #17233c;
+    box-shadow: 14px 0 0 #17233c, 7px 6px 0 #d9387a;
   }
   .booth-button {
     width: 18px;
@@ -415,7 +425,7 @@
         <div class="booth-body" aria-hidden="true">
           <div class="booth-curtain"></div>
           <div class="booth-console">
-            <div class="booth-screen"><span class="pixel-head"></span></div>
+            <div class="booth-screen"><span class="pixel-cat"><i class="cat-face"></i></span></div>
             <div class="booth-button"></div>
             <div class="booth-slot"></div>
           </div>
