@@ -120,6 +120,14 @@
     letter-spacing: .04em;
     white-space: nowrap;
   }
+  .privacy-note {
+    max-width: 25ch;
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 11px;
+    line-height: 1.45;
+    text-align: left;
+  }
 
   .workspace {
     display: grid;
@@ -296,7 +304,9 @@
       padding: 0 7px 7px 0;
     }
     .photo-booth-image { width: 152px; height: 152px; }
+    .photo-booth-image { grid-row: 1 / span 2; }
     .privacy-badge { align-self: center; }
+    .privacy-note { align-self: start; }
     .workspace { gap: 18px; padding-top: 18px; }
     .controls { display: block; padding: 16px; }
     .section + .section { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--rule); }
@@ -323,6 +333,7 @@
     <div class="hero-visual">
       <img class="photo-booth-image" src="./pixel-photo-booth.webp" width="512" height="512" alt="粉紅色證明寫真機裡坐著一隻像素風灰白貓咪">
       <span class="privacy-badge">LOCAL ONLY · 不上傳</span>
+      <p class="privacy-note">照片只在你的瀏覽器本機處理，不會上傳到伺服器。</p>
     </div>
   </header>
 
