@@ -484,7 +484,12 @@
   .settings-content { padding: 1px 0 13px; }
   .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
   .pool-editor { display: grid; gap: 8px; margin-top: 10px; }
-  .pool-edit-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; }
+  .pool-edit-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px 38px; gap: 8px; align-items: end; }
+  .pool-count-row { display: flex; align-items: flex-end; gap: 8px; margin-top: 9px; }
+  .pool-count-row .field { flex: 1; }
+  .step-button { flex: 0 0 auto; width: 44px; padding: 9px 0; font-size: 15px; }
+  .row-remove { padding: 9px 0; font-size: 12px; }
+  .add-pool { width: 100%; margin-top: 9px; }
   .setting-footer { align-items: flex-end; margin-top: 12px; }
   .setting-footer small { color: var(--quest-muted); font-family: var(--font-mono); font-size: 11px; line-height: 1.45; }
   .data-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -594,7 +599,7 @@
     .game-panel { padding: 13px; box-shadow: 4px 4px 0 var(--quest-drop); }
     .life-hud, .score-hud, .pool-card { box-shadow: 3px 3px 0 var(--quest-drop); }
     .settings-grid { grid-template-columns: 1fr; }
-    .pool-edit-row { grid-template-columns: minmax(0, 1fr) 80px; }
+    .pool-edit-row { grid-template-columns: minmax(0, 1fr) 76px 34px; }
     .data-actions { grid-template-columns: 1fr; }
     .life-art-slot { flex: 0 0 62px; }
     .game-over-actions { flex-direction: column; align-items: stretch; width: 100%; }
@@ -700,14 +705,19 @@
             <span class="panel-step">CAMP</span>
           </div>
           <details open>
-            <summary>開新回合／調整配給</summary>
+            <summary>新增／刪除預算池 · 改名 · 開新回合</summary>
             <div class="settings-content">
               <div class="settings-grid">
                 <label class="field"><span>本回合薪水</span><input class="game-input" id="draft-salary" type="number" min="1" step="1" inputmode="numeric"></label>
                 <label class="field"><span>月份</span><input class="game-input" id="draft-month" type="month"></label>
               </div>
-              <label class="field" style="margin-top:9px"><span>預算池數量（最多 10 條命）</span><input class="game-input" id="draft-count" type="number" min="1" max="10" step="1" inputmode="numeric"></label>
+              <div class="pool-count-row">
+                <label class="field"><span>預算池數量（1–10 條命）</span><input class="game-input" id="draft-count" type="number" min="1" max="10" step="1" inputmode="numeric"></label>
+                <button class="game-button secondary step-button" id="remove-pool" type="button" aria-label="減少一池">－</button>
+                <button class="game-button step-button" id="add-pool-top" type="button" aria-label="增加一池">＋</button>
+              </div>
               <div class="pool-editor" id="pool-editor"></div>
+              <button class="game-button secondary add-pool" id="add-pool" type="button">＋ 新增一池</button>
               <div class="setting-footer">
                 <small id="allocation-hint">—</small>
                 <button class="game-button" id="new-round" type="button">開始新回合</button>
@@ -803,6 +813,9 @@
     draftMonth: document.querySelector('#draft-month'),
     draftCount: document.querySelector('#draft-count'),
     poolEditor: document.querySelector('#pool-editor'),
+    addPool: document.querySelector('#add-pool'),
+    addPoolTop: document.querySelector('#add-pool-top'),
+    removePool: document.querySelector('#remove-pool'),
     allocationHint: document.querySelector('#allocation-hint'),
     newRound: document.querySelector('#new-round'),
     exportData: document.querySelector('#export-data'),
@@ -924,6 +937,7 @@
       <div class="pool-edit-row">
         <label class="field"><span>第 ${String(index + 1).padStart(2, '0')} 池名稱</span><input class="game-input" data-draft-field="name" data-draft-index="${index}" type="text" maxlength="24" value="${escapeAttribute(pool.name)}"></label>
         <label class="field"><span>配給</span><input class="game-input" data-draft-field="budget" data-draft-index="${index}" type="number" min="1" step="1" inputmode="numeric" value="${pool.budget}"></label>
+        <button class="game-button danger row-remove" type="button" data-remove-index="${index}" aria-label="刪除第 ${index + 1} 池：${escapeAttribute(pool.name)}" ${draft.pools.length > 1 ? '' : 'disabled'}>✕</button>
       </div>`).join('');
     updateAllocationHint();
   }
@@ -1112,6 +1126,21 @@
   ui.draftSalary.addEventListener('input', () => { draft.salary = ui.draftSalary.value; updateAllocationHint(); });
   ui.draftMonth.addEventListener('input', () => { draft.month = ui.draftMonth.value; });
   ui.draftCount.addEventListener('input', () => { draft.count = Math.min(10, Math.max(1, numberValue(ui.draftCount.value, 1))); renderDraft(); });
+  // 池數同時由數字欄位與 ＋／－ 按鈕驅動；draft 只是草稿，按下「開始新回合」才寫入 state。
+  function changePoolCount(delta) {
+    draft.count = Math.min(10, Math.max(1, draft.pools.length + delta));
+    renderDraft();
+  }
+  ui.addPool.addEventListener('click', () => changePoolCount(1));
+  ui.addPoolTop.addEventListener('click', () => changePoolCount(1));
+  ui.removePool.addEventListener('click', () => changePoolCount(-1));
+  ui.poolEditor.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-remove-index]');
+    if (!button || draft.pools.length <= 1) return;
+    draft.pools.splice(Number(button.dataset.removeIndex), 1);
+    draft.count = draft.pools.length;
+    renderDraft();
+  });
   ui.poolEditor.addEventListener('input', (event) => {
     const input = event.target.closest('[data-draft-field]');
     if (!input) return;
