@@ -447,6 +447,35 @@
   .icon-button:hover { background: #2a1414; }
   .empty-state { padding: 14px 0 4px; color: #5d7a68; font-size: 12px; }
 
+  /* 圖位：戰鬥紀錄面板頂端的迷宮地圖橫幅。 */
+  .map-art-slot {
+    display: grid;
+    place-items: center;
+    width: 141px;
+    height: 88px;
+    margin: 0 auto 12px;
+    border: 2px dashed var(--quest-line-2);
+    color: var(--quest-muted);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: .08em;
+    text-align: center;
+  }
+  /* 圖位：節約任務面板的寶箱，貼齊金額左側。 */
+  .treasure-art-slot {
+    display: grid;
+    place-items: center;
+    flex: 0 0 56px;
+    height: 56px;
+    border: 2px dashed var(--quest-gold-deep);
+    color: var(--quest-gold-deep);
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: .06em;
+    text-align: center;
+  }
+  .saving-amount { gap: 10px; }
+
   .saving-panel { border-color: var(--quest-gold-deep); }
   .saving-panel .panel-step { color: var(--quest-gold); }
   .saving-amount { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin: 10px 0; }
@@ -683,6 +712,7 @@
             <h3 id="ledger-title">最近戰鬥紀錄</h3>
             <span class="panel-step">03 / LOG</span>
           </div>
+          <div class="map-art-slot" data-art-slot="map">ART SLOT<br>256 x 160<br>QUEST MAP</div>
           <div class="transaction-list" id="transaction-list"></div>
         </section>
       </div>
@@ -695,7 +725,7 @@
           </div>
           <p class="panel-note">把沒花掉的錢存成寶藏，為本回合設定一個可完成的目標。</p>
           <label class="field"><span>目標金額</span><input class="game-input" id="saving-goal" type="number" min="1" step="1" inputmode="numeric"></label>
-          <div class="saving-amount"><strong class="saving-current" id="saving-current">¥0</strong><span class="saving-goal" id="saving-goal-label">目標 ¥0</span></div>
+          <div class="saving-amount"><div class="treasure-art-slot" data-art-slot="treasure">ART<br>96x96</div><strong class="saving-current" id="saving-current">¥0</strong><span class="saving-goal" id="saving-goal-label">目標 ¥0</span></div>
           <div class="saving-track" aria-label="節約進度"><div class="saving-fill" id="saving-fill" style="width: 0%"></div></div>
           <form class="saving-form" id="saving-form">
             <label class="field"><span>本次存入</span><input class="game-input" id="saving-add" type="number" min="1" step="1" inputmode="numeric" placeholder="例如 500"></label>
