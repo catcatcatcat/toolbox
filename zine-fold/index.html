@@ -71,36 +71,39 @@
     color: var(--ink);
     font-family: var(--font-body);
     font-size: 15px;
-    line-height: 1.65;
+    line-height: 1.55;
   }
-  :focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--pink); outline-offset: 3px; }
 
-  .app { max-width: 1280px; margin: 0 auto; padding: 0 28px 64px; }
+  .page { max-width: 1280px; margin: 0 auto; padding: 0 28px 64px; }
 
   /* ---- masthead ---- */
-  .masthead { padding: 44px 0 32px; border-bottom: 2px solid var(--ink); }
+  .masthead { padding: 36px 0 24px; border-bottom: 2px solid var(--ink); }
   .masthead-top {
-    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
-    gap: 10px 24px; margin-bottom: 12px;
+    display: block; margin-bottom: 12px;
   }
   .eyebrow {
     font-family: var(--font-mono);
     font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
-    color: var(--pink); margin: 0;
+    color: var(--pink); margin: 10px 0 0;
   }
   .home-link {
-    font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em;
-    color: var(--blue); text-underline-offset: 3px;
+    display: inline-block;
+    color: var(--pink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-decoration: none;
   }
-  .home-link:hover { color: var(--pink); }
+  .home-link:hover { text-decoration: underline; text-underline-offset: 3px; }
   .masthead h1 {
     font-family: var(--font-display);
-    font-weight: 700; font-size: clamp(30px, 4.6vw, 46px);
-    letter-spacing: -.02em; line-height: 1.1;
+    font-weight: 700; font-size: clamp(30px, 4vw, 48px);
+    letter-spacing: -.025em; line-height: 1.08;
     margin: 0 0 10px; text-wrap: balance;
   }
   .masthead .lede {
-    margin: 0; max-width: 62ch; color: var(--ink-2); font-size: 15px;
+    margin: 0; max-width: 66ch; color: var(--ink-2); font-size: 15px;
   }
   .notice {
     display: none;
@@ -335,21 +338,19 @@
   /* ---- site footer ---- */
   .site-footer {
     display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px;
-    margin-top: 56px; padding-top: 16px;
+    margin-top: 32px; padding-top: 18px;
     border-top: 1px solid var(--rule);
-    color: var(--ink-2); font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: .04em;
+    color: var(--ink-2); font-size: 12px;
   }
-  .site-footer p { margin: 0; }
-  .site-footer a { color: var(--blue); text-underline-offset: 3px; }
-  .site-footer a:hover { color: var(--pink); }
+  .site-footer a { color: var(--pink); }
+  .site-footer a:hover { color: var(--ink); }
 
   .repo-cta {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    margin-top: 30px;
+    margin-top: 32px;
     padding: 20px 22px;
     border: 1px solid var(--blue);
     background: var(--blue-wash);
@@ -366,10 +367,13 @@
     font-weight: 500;
     text-decoration: none;
   }
-  .repo-link:hover { background: var(--pink); color: var(--ground); }
-  @media (max-width: 620px) {
+  .repo-link:hover { background: var(--pink); }
+  @media (max-width: 640px) {
+    .page { padding: 0 16px 44px; }
+    .masthead { padding-top: 26px; }
     .repo-cta { display: block; }
     .repo-link { display: inline-block; margin-top: 16px; }
+    .site-footer { display: block; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -380,7 +384,7 @@
   @media print {
     .no-print { display: none !important; }
     body { background: #FFF; }
-    .app { max-width: none; padding: 0; }
+    .page { max-width: none; padding: 0; }
     .workbench { display: block; padding: 0; gap: 0; }
     .col, .col-out { display: block; position: static !important; gap: 0; }
     .block { gap: 0; }
@@ -392,12 +396,12 @@
 </head>
 <body>
 
-<div class="app">
+<div class="page">
 
   <header class="masthead no-print">
     <div class="masthead-top">
+      <a class="home-link" href="../" aria-label="回到貓貓工具箱首頁">← 貓貓工具箱 / TOOLBOX</a>
       <p class="eyebrow">One-sheet zine · imposition</p>
-      <a class="home-link" href="https://toolbox.catcatcatcat.cc/" aria-label="回到貓貓工具箱首頁">← 貓貓工具箱</a>
     </div>
     <h1>八折小誌拼版器</h1>
     <p class="lede">
@@ -538,8 +542,8 @@
   </aside>
 
   <footer class="site-footer no-print">
-    <p>© 2026 catcatcatcat · 程式碼以 <a href="../LICENSE">MIT License</a> 釋出</p>
-    <a href="https://toolbox.catcatcatcat.cc/">← 貓貓工具箱</a>
+    <span>© 2026 catcatcatcat · MIT License</span>
+    <span>列印版型只在瀏覽器本機處理。<a href="../">回到貓貓工具箱</a></span>
   </footer>
 </div>
 

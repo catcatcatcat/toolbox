@@ -66,14 +66,14 @@
     color: var(--ink);
     font-family: var(--font-body);
     font-size: 15px;
-    line-height: 1.65;
+    line-height: 1.55;
   }
   :focus-visible { outline: 2px solid var(--pink); outline-offset: 3px; }
 
-  .page { max-width: 860px; margin: 0 auto; padding: 0 28px 72px; }
+  .page { max-width: 860px; margin: 0 auto; padding: 0 28px 64px; }
 
   /* ---- masthead ---- */
-  .masthead { padding: 56px 0 30px; border-bottom: 2px solid var(--ink); }
+  .masthead { padding: 36px 0 24px; border-bottom: 2px solid var(--ink); }
   .eyebrow {
     font-family: var(--font-mono);
     font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
@@ -81,11 +81,11 @@
   }
   .masthead h1 {
     font-family: var(--font-display);
-    font-weight: 700; font-size: clamp(32px, 5.4vw, 50px);
-    letter-spacing: -.02em; line-height: 1.08;
-    margin: 0 0 14px; text-wrap: balance;
+    font-weight: 700; font-size: clamp(30px, 4vw, 48px);
+    letter-spacing: -.025em; line-height: 1.08;
+    margin: 0 0 10px; text-wrap: balance;
   }
-  .masthead .lede { margin: 0; max-width: 54ch; color: var(--ink-2); }
+  .masthead .lede { margin: 0; max-width: 66ch; color: var(--ink-2); }
 
   /* ---- tool list ---- */
   .tools { display: flex; flex-direction: column; }
@@ -120,7 +120,7 @@
   /* ---- repository call to action ---- */
   .repo-cta {
     display: flex; align-items: center; justify-content: space-between; gap: 24px;
-    margin-top: 46px; padding: 22px 24px;
+    margin-top: 32px; padding: 20px 22px;
     background: var(--blue-wash); border: 1px solid var(--blue);
   }
   .repo-cta p { margin: 0; color: var(--ink-2); }
@@ -139,10 +139,11 @@
 
   /* ---- colophon ---- */
   .colophon {
-    margin-top: 46px; padding: 18px 20px;
+    margin-top: 32px; padding: 18px 20px;
     background: var(--surface); border-left: 3px solid var(--pink);
     font-size: 13.5px; line-height: 1.7; color: var(--ink-2);
   }
+  .colophon + .colophon { margin-top: 16px; }
   .colophon strong { color: var(--ink); font-weight: 600; }
   .colophon a {
     color: var(--pink); text-decoration: underline;
@@ -150,6 +151,26 @@
   }
   .colophon a:hover { color: var(--ink); }
   .colophon code { font-family: var(--font-mono); font-size: 0.92em; }
+
+  /* ---- site footer ---- */
+  .site-footer {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px;
+    margin-top: 32px; padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-2); font-size: 12px;
+  }
+  .site-footer span { margin: 0; }
+  .site-footer a { color: var(--pink); }
+
+  @media (max-width: 640px) {
+    .page { padding: 0 16px 44px; }
+    .masthead { padding-top: 26px; }
+    .repo-cta { display: block; }
+    .repo-link { display: inline-block; margin-top: 16px; }
+    .site-footer { display: block; }
+    .site-footer span { display: block; }
+    .site-footer span + span { margin-top: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -211,6 +232,11 @@
     你放進工具的圖片、文字與檔案都在本機處理；貓貓工具箱不接收、不保存，
     也不把內容交給其他服務。
   </p>
+
+  <footer class="site-footer">
+    <span>© 2026 catcatcatcat · MIT License</span>
+    <span>工具資料只在瀏覽器本機處理，不會上傳。<a href="https://github.com/catcatcatcat/toolbox">查看原始碼</a></span>
+  </footer>
 
 </div>
 </body>
