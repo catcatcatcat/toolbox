@@ -26,16 +26,21 @@
     --font-body: "IBM Plex Sans", "PingFang TC", "Hiragino Sans", sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    --quest-bg: #101a16;
-    --quest-panel: #182a22;
-    --quest-panel-2: #21392c;
-    --quest-line: #5e8a6c;
-    --quest-ink: #f4f0d1;
-    --quest-muted: #aab9a0;
-    --quest-gold: #edc85c;
-    --quest-green: #78d79b;
-    --quest-red: #e26d64;
+    --quest-bg: #0b1220;
+    --quest-panel: #14301f;
+    --quest-panel-2: #0f2416;
+    --quest-line: #2a4a33;
+    --quest-line-2: #3a5a42;
+    --quest-ink: #f4ecd8;
+    --quest-muted: #9db4a4;
+    --quest-gold: #e8b95f;
+    --quest-gold-hi: #f0c876;
+    --quest-gold-deep: #7a5a1f;
+    --quest-green: #5fae6b;
+    --quest-red: #e5484d;
+    --quest-red-deep: #5a3a3a;
     --quest-blue: #88b7df;
+    --quest-drop: rgb(0 0 0 / .45);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -124,36 +129,39 @@
     text-align: center;
   }
 
+  /* ---- 16-bit HUD 基礎：硬邊框、實心投影、無圓角 ---- */
+  @keyframes pixel-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: .25; } }
+
   .game-shell {
     position: relative;
     margin-top: 28px;
-    overflow: hidden;
-    padding: 22px;
+    padding: 20px;
     color: var(--quest-ink);
+    border: 4px solid var(--quest-line);
     background-color: var(--quest-bg);
     background-image:
-      linear-gradient(rgb(120 215 155 / .035) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(120 215 155 / .035) 1px, transparent 1px);
-    background-size: 24px 24px;
-    box-shadow: 8px 8px 0 rgb(22 36 27 / .16);
+      linear-gradient(rgb(95 174 107 / .05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(95 174 107 / .05) 1px, transparent 1px);
+    background-size: 16px 16px;
+    box-shadow: 8px 8px 0 var(--quest-drop);
   }
   .game-shell::before,
   .game-shell::after {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-color: var(--quest-gold);
     border-style: solid;
     content: "";
     pointer-events: none;
   }
-  .game-shell::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
-  .game-shell::after { right: 10px; bottom: 10px; border-width: 0 2px 2px 0; }
+  .game-shell::before { top: 6px; left: 6px; border-width: 3px 0 0 3px; }
+  .game-shell::after { right: 6px; bottom: 6px; border-width: 0 3px 3px 0; }
+
   .game-topbar,
   .hud-row,
   .panel-title,
   .transaction-head,
-  .field-head,
   .pool-title,
   .pool-values,
   .setting-footer,
@@ -166,7 +174,7 @@
   }
   .game-topbar {
     padding-bottom: 16px;
-    border-bottom: 2px solid var(--quest-line);
+    border-bottom: 4px solid var(--quest-line);
   }
   .pixel-kicker,
   .mini-label,
@@ -175,76 +183,95 @@
   .status-chip,
   .pool-number,
   .entry-date,
-  .setting-footer,
   .game-button,
   .game-input,
   .game-select,
   .art-slot,
-  .stat-value {
+  .stat-value,
+  .pool-remaining,
+  .pool-total,
+  .pool-meta,
+  .entry-amount,
+  .saving-current,
+  .saving-goal,
+  .icon-button {
     font-family: var(--font-mono);
   }
+  /* Press Start 2P 之類的點陣字沒有中文字符，載入外部字型也違反零依賴，
+     因此標題改用等寬字 + 硬投影 + 字距模擬 16-bit 招牌感。 */
+  .pixel-type {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-shadow: 3px 3px 0 rgb(0 0 0 / .75);
+  }
   .pixel-kicker {
-    margin: 0 0 3px;
+    margin: 0 0 6px;
     color: var(--quest-gold);
-    font-size: 11px;
-    letter-spacing: .12em;
+    font-size: 10px;
+    letter-spacing: .16em;
     text-transform: uppercase;
   }
   .game-topbar h2 {
     margin: 0;
-    color: var(--quest-ink);
-    font-family: var(--font-display);
-    font-size: clamp(22px, 3vw, 34px);
-    line-height: 1.1;
+    color: var(--quest-gold);
+    font-size: clamp(18px, 3.2vw, 26px);
+    line-height: 1.25;
   }
   .game-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
   .game-chip,
   .status-chip {
-    padding: 6px 8px;
-    border: 1px solid var(--quest-line);
+    padding: 6px 9px;
+    border: 2px solid var(--quest-line-2);
+    background: var(--quest-bg);
     color: var(--quest-muted);
     font-size: 10px;
-    letter-spacing: .07em;
+    letter-spacing: .08em;
   }
-  .game-chip strong { color: var(--quest-green); font-weight: 500; }
+  .game-chip strong { color: var(--quest-gold); font-weight: 700; }
 
   .hud-row { align-items: stretch; padding: 18px 0; }
   .life-hud,
   .score-hud {
     min-height: 82px;
     padding: 14px 16px;
-    border: 1px solid var(--quest-line);
-    background: rgb(33 57 44 / .8);
+    border: 3px solid var(--quest-line);
+    background: var(--quest-panel);
+    box-shadow: 5px 5px 0 var(--quest-drop);
   }
   .life-hud { flex: 1 1 auto; }
   .score-hud { flex: 0 0 min(430px, 42%); }
   .mini-label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     color: var(--quest-muted);
     font-size: 10px;
-    letter-spacing: .12em;
+    letter-spacing: .14em;
     text-transform: uppercase;
   }
-  .life-hud h3 { margin: 0; color: var(--quest-ink); font-family: var(--font-display); font-size: 18px; }
-  .global-hearts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
-  .heart-token {
-    display: inline-grid;
-    place-items: center;
-    min-width: 38px;
-    min-height: 27px;
-    padding: 3px 5px;
-    border: 1px solid var(--quest-line);
-    color: var(--quest-red);
+  .life-hud h3 {
+    margin: 0;
+    color: var(--quest-ink);
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .04em;
   }
-  .heart-token.is-alive { color: var(--quest-red); border-color: var(--quest-red); }
-  .heart-token.is-dead { color: #5e6e62; border-color: #405248; text-decoration: line-through; }
+  .life-hud h3 span { color: var(--quest-gold); }
+  .global-hearts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+  .heart-token {
+    display: block;
+    width: 16px;
+    height: 16px;
+    background: var(--quest-red);
+    /* 純幾何 HUD 圖示，不是角色或既有素材 */
+    clip-path: polygon(50% 15%, 61% 0%, 78% 0%, 93% 15%, 93% 32%, 78% 47%, 50% 70%, 22% 47%, 7% 32%, 7% 15%, 22% 0%, 39% 0%);
+  }
+  .heart-token.is-dead { background: #3a2a2a; }
   .score-line { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; }
-  .score-line + .score-line { margin-top: 5px; }
+  .score-line + .score-line { margin-top: 6px; }
   .score-name { color: var(--quest-muted); font-size: 12px; }
-  .stat-value { color: var(--quest-ink); font-size: 14px; }
+  .stat-value { color: var(--quest-ink); font-size: 14px; font-weight: 700; }
   .stat-value.gold { color: var(--quest-gold); }
   .stat-value.green { color: var(--quest-green); }
 
@@ -259,18 +286,21 @@
   .game-panel {
     min-width: 0;
     padding: 16px;
-    border: 1px solid var(--quest-line);
-    background: rgb(24 42 34 / .95);
+    border: 4px solid var(--quest-line);
+    background: var(--quest-panel);
+    box-shadow: 6px 6px 0 var(--quest-drop);
   }
   .panel-title { align-items: baseline; margin-bottom: 13px; }
   .panel-title h3,
   .transaction-head h3 {
     margin: 0;
-    color: var(--quest-ink);
-    font-family: var(--font-display);
-    font-size: 18px;
+    color: var(--quest-gold);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .06em;
   }
-  .panel-step { color: var(--quest-gold); font-size: 10px; letter-spacing: .1em; }
+  .panel-step { color: var(--quest-muted); font-size: 10px; letter-spacing: .12em; }
   .panel-note { margin: 0 0 13px; color: var(--quest-muted); font-size: 12px; }
 
   .expense-form { display: grid; grid-template-columns: 1fr 1fr 1.15fr auto; gap: 9px; align-items: end; }
@@ -279,32 +309,45 @@
   .game-input,
   .game-select {
     width: 100%;
-    min-height: 40px;
-    border: 1px solid var(--quest-line);
+    min-height: 42px;
+    border: 3px solid var(--quest-line-2);
     border-radius: 0;
     color: var(--quest-ink);
     background: var(--quest-bg);
     padding: 8px 9px;
   }
-  .game-input::placeholder { color: #718579; }
+  .game-input::placeholder { color: #5d7a68; }
   .game-input:focus,
   .game-select:focus { border-color: var(--quest-gold); outline: none; }
+
   .game-button {
-    min-height: 40px;
-    border: 2px solid var(--quest-gold);
+    min-height: 42px;
+    border: 3px solid var(--quest-gold-deep);
     border-radius: 0;
-    color: var(--quest-bg);
+    color: #1a2f1e;
     background: var(--quest-gold);
-    padding: 8px 12px;
+    padding: 8px 14px;
     font-size: 11px;
-    letter-spacing: .03em;
+    font-weight: 700;
+    letter-spacing: .08em;
     white-space: nowrap;
+    box-shadow: 4px 4px 0 var(--quest-drop);
   }
-  .game-button:hover { background: var(--quest-ink); border-color: var(--quest-ink); }
-  .game-button.secondary { color: var(--quest-ink); background: transparent; border-color: var(--quest-line); }
-  .game-button.secondary:hover { color: var(--quest-bg); background: var(--quest-green); border-color: var(--quest-green); }
-  .game-button.danger { color: var(--quest-ink); background: transparent; border-color: var(--quest-red); }
-  .game-button.danger:hover { color: var(--quest-bg); background: var(--quest-red); }
+  .game-button:hover { background: var(--quest-gold-hi); }
+  .game-button:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--quest-drop); }
+  .game-button[disabled] { opacity: .45; box-shadow: none; transform: none; cursor: not-allowed; }
+  .game-button.secondary {
+    color: var(--quest-ink);
+    background: var(--quest-line);
+    border-color: var(--quest-green);
+  }
+  .game-button.secondary:hover { background: #345c3f; }
+  .game-button.danger {
+    color: var(--quest-red);
+    background: transparent;
+    border-color: var(--quest-red-deep);
+  }
+  .game-button.danger:hover { background: #2a1414; }
   .status-message { min-height: 22px; margin: 10px 0 0; color: var(--quest-green); font-family: var(--font-mono); font-size: 11px; }
   .status-message.warning { color: var(--quest-gold); }
 
@@ -313,113 +356,183 @@
     position: relative;
     min-width: 0;
     padding: 14px;
-    border: 1px solid var(--quest-line);
+    border: 4px solid var(--pool-color, var(--quest-green));
     background: var(--quest-panel-2);
+    box-shadow: 5px 5px 0 var(--quest-drop);
   }
-  .pool-card::before {
-    position: absolute;
-    top: -1px;
-    right: 12px;
-    left: 12px;
-    height: 3px;
-    background: var(--pool-color, var(--quest-green));
-    content: "";
-  }
-  .pool-card.is-dead { opacity: .7; border-color: #45564b; }
-  .pool-card.is-critical { border-color: var(--quest-gold); }
+  .pool-card.is-dead { border-color: #3a5a42; }
+  .pool-card.is-critical { border-color: var(--quest-red); }
   .pool-title { align-items: baseline; margin-bottom: 11px; }
-  .pool-name { min-width: 0; overflow: hidden; color: var(--quest-ink); font-family: var(--font-display); font-size: 16px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-  .pool-number { color: var(--quest-muted); font-size: 10px; letter-spacing: .08em; }
-  .pool-life-row { display: flex; align-items: center; gap: 12px; min-height: 60px; }
+  .pool-name { min-width: 0; overflow: hidden; color: var(--quest-ink); font-size: 15px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+  .pool-number { color: var(--quest-muted); font-size: 10px; letter-spacing: .1em; }
+  .pool-life-row { display: flex; align-items: center; gap: 10px; min-height: 58px; }
   .life-art-slot {
     display: grid;
     place-items: center;
-    flex: 0 0 74px;
-    min-height: 54px;
-    border: 1px dashed var(--pool-color, var(--quest-green));
+    flex: 0 0 72px;
+    min-height: 52px;
+    border: 2px dashed var(--pool-color, var(--quest-green));
     color: var(--pool-color, var(--quest-green));
     font-family: var(--font-mono);
-    font-size: 10px;
-    line-height: 1.3;
+    font-size: 9px;
+    letter-spacing: .08em;
+    line-height: 1.4;
     text-align: center;
   }
   .life-art-slot.is-dead { color: #738079; border-color: #516056; }
-  .pool-values { align-items: baseline; margin: 10px 0 6px; }
-  .pool-remaining { color: var(--quest-ink); font-family: var(--font-mono); font-size: 18px; }
+  .pool-values { align-items: baseline; margin: 10px 0 8px; }
+  .pool-remaining { color: var(--quest-ink); font-size: 18px; font-weight: 700; }
   .pool-remaining.is-negative { color: var(--quest-red); }
-  .pool-total { color: var(--quest-muted); font-family: var(--font-mono); font-size: 10px; }
-  .blood-track,
-  .saving-track {
-    height: 13px;
-    padding: 2px;
-    border: 1px solid var(--quest-line);
-    background: var(--quest-bg);
-  }
-  .blood-fill,
-  .saving-fill { height: 100%; background: var(--pool-color, var(--quest-green)); transition: width .2s ease; }
-  .pool-card.is-dead .blood-fill { background: #58635b; }
-  .pool-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 7px; color: var(--quest-muted); font-family: var(--font-mono); font-size: 10px; }
-  .pool-action { width: 100%; margin-top: 12px; min-height: 34px; padding: 6px 8px; }
+  .pool-total { color: var(--quest-muted); font-size: 10px; }
 
-  .transaction-head { align-items: baseline; margin-bottom: 8px; }
-  .transaction-list { display: grid; gap: 0; }
+  /* 分段血條：10 格是像素遊戲 HUD 的標準讀法，比連續長條更好判讀 */
+  .life-segments { display: flex; gap: 2px; }
+  .life-seg {
+    flex: 1;
+    height: 14px;
+    border: 1px solid #000;
+    background: #26332a;
+  }
+  .life-seg.is-filled { background: var(--pool-color, var(--quest-green)); }
+  .pool-card.is-critical .life-seg.is-filled { background: var(--quest-red); }
+  .pool-card.is-dead .life-seg.is-filled { background: #58635b; }
+  .pool-status {
+    margin-top: 8px;
+    color: var(--pool-color, var(--quest-green));
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-align: center;
+  }
+  .pool-card.is-critical .pool-status { color: var(--quest-red); }
+  .pool-card.is-critical .status-chip { color: var(--quest-red); border-color: var(--quest-red-deep); }
+  .pool-card.is-dead .status-chip { color: #738079; border-color: #405248; }
+  .pool-card.is-dead .pool-status { color: var(--quest-red); animation: pixel-blink 1s steps(1) infinite; }
+  .pool-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; color: var(--quest-muted); font-size: 10px; }
+  .pool-action { width: 100%; margin-top: 12px; min-height: 36px; padding: 6px 8px; }
+
+  .transaction-head { align-items: baseline; margin-bottom: 10px; }
+  .transaction-list { display: grid; gap: 6px; }
   .transaction-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
     gap: 10px;
     align-items: center;
-    padding: 10px 0;
-    border-top: 1px solid rgb(94 138 108 / .45);
+    padding: 9px 10px;
+    border: 2px solid var(--quest-line);
+    background: var(--quest-bg);
   }
-  .entry-note { overflow: hidden; color: var(--quest-ink); text-overflow: ellipsis; white-space: nowrap; }
-  .entry-pool { display: block; margin-top: 1px; color: var(--quest-muted); font-size: 11px; }
+  .entry-note { overflow: hidden; color: var(--quest-ink); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+  .entry-pool {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 1px 6px;
+    background: var(--quest-gold);
+    color: var(--quest-bg);
+    font-size: 10px;
+    font-weight: 700;
+  }
   .entry-date { color: var(--quest-muted); font-size: 10px; white-space: nowrap; }
-  .entry-amount { color: var(--quest-red); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+  .entry-amount { color: var(--quest-red); font-size: 12px; font-weight: 700; white-space: nowrap; }
   .icon-button {
-    min-width: 27px;
-    min-height: 27px;
-    border: 1px solid var(--quest-line);
-    color: var(--quest-muted);
+    min-width: 28px;
+    min-height: 28px;
+    border: 2px solid var(--quest-red-deep);
+    color: var(--quest-red);
     background: transparent;
-    font-family: var(--font-mono);
     font-size: 12px;
   }
-  .icon-button:hover { color: var(--quest-ink); border-color: var(--quest-ink); }
-  .empty-state { padding: 16px 0 4px; color: var(--quest-muted); font-size: 12px; }
+  .icon-button:hover { background: #2a1414; }
+  .empty-state { padding: 14px 0 4px; color: #5d7a68; font-size: 12px; }
 
-  .saving-panel { border-color: var(--quest-gold); }
+  .saving-panel { border-color: var(--quest-gold-deep); }
   .saving-panel .panel-step { color: var(--quest-gold); }
-  .saving-amount { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin: 8px 0 10px; }
-  .saving-current { color: var(--quest-gold); font-family: var(--font-mono); font-size: 25px; }
-  .saving-goal { color: var(--quest-muted); font-family: var(--font-mono); font-size: 11px; }
-  .saving-track { border-color: #947c3d; }
-  .saving-fill { background: var(--quest-gold); }
-  .saving-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; margin-top: 13px; }
-  .saving-streak { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 11px; border-top: 1px solid rgb(148 124 61 / .5); color: var(--quest-muted); font-size: 12px; }
-  .saving-streak strong { color: var(--quest-gold); font-family: var(--font-mono); font-weight: 500; }
+  .saving-amount { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin: 10px 0; }
+  .saving-current { color: var(--quest-gold); font-size: 24px; font-weight: 700; }
+  .saving-goal { color: var(--quest-muted); font-size: 11px; }
+  .saving-track {
+    height: 18px;
+    padding: 2px;
+    border: 3px solid var(--quest-gold-deep);
+    background: var(--quest-bg);
+  }
+  .saving-fill { height: 100%; background: var(--quest-gold); transition: width .2s steps(12); }
+  .saving-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; margin-top: 13px; align-items: end; }
+  .saving-streak {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 11px;
+    border-top: 2px solid var(--quest-line);
+    color: var(--quest-muted);
+    font-size: 12px;
+  }
+  .saving-streak strong { color: var(--quest-gold); font-family: var(--font-mono); font-weight: 700; }
 
-  .settings-panel details { border-top: 1px solid rgb(94 138 108 / .45); }
+  .settings-panel details { border-top: 2px solid var(--quest-line); }
   .settings-panel details:first-of-type { border-top: 0; }
-  .settings-panel summary { cursor: pointer; padding: 11px 0; color: var(--quest-ink); font-family: var(--font-display); font-size: 14px; }
+  .settings-panel summary {
+    cursor: pointer;
+    padding: 11px 0;
+    color: var(--quest-ink);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
   .settings-content { padding: 1px 0 13px; }
   .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
   .pool-editor { display: grid; gap: 8px; margin-top: 10px; }
   .pool-edit-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; }
-  .setting-footer { align-items: flex-start; margin-top: 12px; }
-  .setting-footer small { color: var(--quest-muted); font-size: 11px; line-height: 1.45; }
+  .setting-footer { align-items: flex-end; margin-top: 12px; }
+  .setting-footer small { color: var(--quest-muted); font-family: var(--font-mono); font-size: 11px; line-height: 1.45; }
   .data-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .data-actions .game-button { width: 100%; }
+  .data-actions .game-button.danger { grid-column: 1 / -1; }
+  .local-badge {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 5px 9px;
+    border: 2px solid var(--quest-gold);
+    color: var(--quest-gold);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+  }
   .privacy-note { margin: 12px 0 0; color: var(--quest-muted); font-size: 11px; line-height: 1.5; }
 
   .game-over {
-    margin: 18px 0 0;
-    padding: 18px;
-    border: 3px solid var(--quest-red);
-    background: #2a1718;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 24px;
+    background: rgb(6 9 16 / .93);
     text-align: center;
   }
-  .game-over h3 { margin: 0; color: var(--quest-red); font-family: var(--font-mono); font-size: 28px; letter-spacing: .12em; }
-  .game-over p { margin: 5px auto 13px; max-width: 52ch; color: var(--quest-ink); font-size: 13px; }
+  .game-over h3 {
+    margin: 0;
+    color: var(--quest-red);
+    font-family: var(--font-mono);
+    font-size: clamp(26px, 9vw, 52px);
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-shadow: 4px 4px 0 #000;
+  }
+  .game-over p { margin: 0; max-width: 46ch; color: var(--quest-ink); font-size: 13px; }
+  .game-over .blink {
+    color: var(--quest-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    animation: pixel-blink 1s steps(1) infinite;
+  }
+  .game-over-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 
   .repo-cta {
     margin-top: 32px;
@@ -465,13 +578,26 @@
     .expense-form .field:nth-child(3),
     .expense-form .game-button { grid-column: auto; }
     .transaction-row { grid-template-columns: minmax(0, 1fr) auto; }
-    .transaction-row .entry-date { grid-column: 1; }
-    .transaction-row .icon-button { grid-column: 2; grid-row: 1 / span 2; }
+    .transaction-row .entry-date { grid-column: 1; grid-row: 2; }
+    .transaction-row .entry-amount { grid-column: 2; grid-row: 2; text-align: right; }
+    .transaction-row .icon-button { grid-column: 2; grid-row: 1; justify-self: end; }
     .repo-cta { display: block; }
     .repo-link { display: inline-block; margin-top: 16px; }
     .site-footer { display: block; }
     .site-footer span { display: block; }
     .site-footer span + span { margin-top: 8px; }
+  }
+  /* 360px：手機最窄常見寬度，硬投影與內距同步縮小，避免橫向捲動 */
+  @media (max-width: 380px) {
+    .page { padding: 0 12px 40px; }
+    .game-shell { padding: 12px; box-shadow: 5px 5px 0 var(--quest-drop); }
+    .game-panel { padding: 13px; box-shadow: 4px 4px 0 var(--quest-drop); }
+    .life-hud, .score-hud, .pool-card { box-shadow: 3px 3px 0 var(--quest-drop); }
+    .settings-grid { grid-template-columns: 1fr; }
+    .pool-edit-row { grid-template-columns: minmax(0, 1fr) 80px; }
+    .data-actions { grid-template-columns: 1fr; }
+    .life-art-slot { flex: 0 0 62px; }
+    .game-over-actions { flex-direction: column; align-items: stretch; width: 100%; }
   }
 </style>
 </head>
@@ -494,7 +620,7 @@
     <div class="game-topbar">
       <div>
         <p class="pixel-kicker">Budget survival quest</p>
-        <h2 id="game-title">本月生存戰</h2>
+        <h2 class="pixel-type" id="game-title">本月生存戰</h2>
       </div>
       <div class="game-chips" aria-label="遊戲狀態">
         <span class="game-chip">ROUND <strong id="cycle-label">—</strong></span>
@@ -591,6 +717,7 @@
           <details>
             <summary>資料管理</summary>
             <div class="settings-content">
+              <span class="local-badge">LOCAL ONLY · 不上傳</span>
               <div class="data-actions">
                 <button class="game-button secondary" id="export-data" type="button">匯出備份</button>
                 <button class="game-button secondary" id="import-data" type="button">匯入備份</button>
@@ -618,10 +745,14 @@
       </aside>
     </div>
 
-    <section class="game-over" id="game-over" hidden aria-live="assertive">
-      <h3>GAME OVER</h3>
+    <section class="game-over" id="game-over" hidden role="alertdialog" aria-labelledby="game-over-title" aria-live="assertive">
+      <h3 id="game-over-title">GAME OVER</h3>
       <p>所有預算池都已歸零。回到營地重整配給，下一局可以更早存下你的寶藏。</p>
-      <button class="game-button" id="restart-round" type="button">帶著經驗重新開局</button>
+      <p class="blink">選擇下一步</p>
+      <div class="game-over-actions">
+        <button class="game-button" id="restart-round" type="button">帶著經驗重新開局</button>
+        <button class="game-button secondary" id="dismiss-game-over" type="button">先看本局戰績</button>
+      </div>
     </section>
   </main>
 
@@ -679,12 +810,16 @@
     importFile: document.querySelector('#import-file'),
     clearData: document.querySelector('#clear-data'),
     gameOver: document.querySelector('#game-over'),
-    restartRound: document.querySelector('#restart-round')
+    restartRound: document.querySelector('#restart-round'),
+    dismissGameOver: document.querySelector('#dismiss-game-over')
   };
 
-  const colorCycle = ['#78d79b', '#edc85c', '#88b7df', '#e59a73', '#c48bd5'];
+  const colorCycle = ['#5fae6b', '#e8b95f', '#88b7df', '#e59a73', '#c48bd5'];
+  const LIFE_SEGMENTS = 10;
   let state = loadState();
   let draft = makeDraft();
+  // 純畫面狀態：關掉 GAME OVER 面板只影響這次瀏覽，不寫進 localStorage。
+  let gameOverDismissed = false;
 
   function today() {
     const date = new Date();
@@ -818,7 +953,13 @@
   function statusText(status) { return { ACTIVE: '存活', CRITICAL: '危險', OUT: '歸零' }[status]; }
   function heartToken(pool, index) {
     const alive = isAlive(pool);
-    return `<span class="heart-token ${alive ? 'is-alive' : 'is-dead'}" aria-label="${pool.name} ${alive ? '存活' : '歸零'}">${alive ? 'HEART' : 'OUT'} ${String(index + 1).padStart(2, '0')}</span>`;
+    const label = `${index + 1} ${escapeAttribute(pool.name)}：${alive ? '存活' : '歸零'}`;
+    return `<span class="heart-token ${alive ? 'is-alive' : 'is-dead'}" role="img" title="${label}" aria-label="${label}"></span>`;
+  }
+  function lifeSegments(ratio) {
+    const filled = ratio > 0 ? Math.max(1, Math.round(ratio * LIFE_SEGMENTS)) : 0;
+    return Array.from({ length: LIFE_SEGMENTS }, (_, index) =>
+      `<span class="life-seg ${index < filled ? 'is-filled' : ''}"></span>`).join('');
   }
   function renderPools() {
     ui.poolGrid.innerHTML = state.pools.map((pool, index) => {
@@ -830,7 +971,8 @@
         <div class="pool-title"><span class="pool-name" title="${escapeAttribute(pool.name)}">${escapeHtml(pool.name)}</span><span class="pool-number">LIFE ${String(index + 1).padStart(2, '0')}</span></div>
         <div class="pool-life-row"><div class="life-art-slot ${status === 'OUT' ? 'is-dead' : ''}" data-art-slot="heart-${index + 1}">HEART<br>ART SLOT</div><span class="status-chip">${statusText(status)}</span></div>
         <div class="pool-values"><strong class="pool-remaining ${left < 0 ? 'is-negative' : ''}">${money(left)}</strong><span class="pool-total">of ${money(pool.budget)}</span></div>
-        <div class="blood-track" aria-label="${pool.name} 血條 ${(ratio * 100).toFixed(0)}%"><div class="blood-fill" style="width:${ratio * 100}%"></div></div>
+        <div class="life-segments" role="img" aria-label="${escapeAttribute(pool.name)} 血條 ${(ratio * 100).toFixed(0)}%">${lifeSegments(ratio)}</div>
+        <p class="pool-status">${status}</p>
         <div class="pool-meta"><span>${left < 0 ? `破盾 ${money(Math.abs(left))}` : `剩餘 ${(ratio * 100).toFixed(0)}%`}</span><span>${pool.spent ? `已用 ${money(pool.spent)}` : '尚未出征'}</span></div>
         <button class="game-button secondary pool-action" type="button" data-action="choose" data-pool-id="${pool.id}">從這池扣款</button>
       </article>`;
@@ -874,7 +1016,10 @@
     renderSaving();
     renderDraft();
     const over = state.pools.length > 0 && state.pools.every((pool) => !isAlive(pool));
-    ui.gameOver.hidden = !over;
+    if (!over) gameOverDismissed = false;
+    const wasHidden = ui.gameOver.hidden;
+    ui.gameOver.hidden = !over || gameOverDismissed;
+    if (wasHidden && !ui.gameOver.hidden) ui.restartRound.focus();
   }
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -901,6 +1046,7 @@
   }
   function restartCurrentRound() {
     draft = makeDraft();
+    gameOverDismissed = false;
     if (window.confirm('要清除本回合的消費紀錄並重新開始嗎？')) newRound(true);
   }
 
@@ -981,6 +1127,7 @@
     newRound(true);
   });
   ui.restartRound.addEventListener('click', restartCurrentRound);
+  ui.dismissGameOver.addEventListener('click', () => { gameOverDismissed = true; render(); });
 
   ui.exportData.addEventListener('click', () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
