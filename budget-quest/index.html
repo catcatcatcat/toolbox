@@ -101,12 +101,13 @@
 
   /* Artist handoff slots: intentionally empty. Replace these elements with
      the commissioned raster assets without changing the game logic. */
-  .hero-visual { flex: 0 0 auto; }
+  /* 與 id-photo-sheet 同一版型：masthead 右上角一張 512x512 像素圖，顯示 196px 見方。 */
+  .hero-visual { flex: 0 0 auto; display: grid; justify-items: center; gap: 10px; }
   .art-slot {
     display: grid;
     place-items: center;
-    min-width: 196px;
-    min-height: 148px;
+    width: 196px;
+    height: 196px;
     padding: 18px;
     border: 1px dashed var(--blue);
     background: color-mix(in srgb, var(--blue) 8%, transparent);
@@ -564,7 +565,13 @@
   @media (max-width: 760px) {
     .masthead { display: block; padding-top: 26px; }
     .hero-visual { margin-top: 20px; }
-    .art-slot { min-width: 0; min-height: 110px; }
+    .hero-visual {
+      width: 100%;
+      grid-template-columns: auto auto;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .art-slot { width: 152px; height: 152px; padding: 12px; }
     .game-shell { padding: 14px; }
     .game-topbar { display: block; }
     .game-chips { justify-content: flex-start; margin-top: 12px; }
@@ -616,7 +623,7 @@
     </div>
     <div class="hero-visual">
       <!-- ART SLOT: commissioned hero / title illustration goes here. -->
-      <div class="art-slot" data-art-slot="hero">ART SLOT<br>HERO / TITLE ILLUSTRATION</div>
+      <div class="art-slot" data-art-slot="hero">ART SLOT<br>512 x 512<br>CAT HERO</div>
       <div class="privacy-badge">LOCAL ONLY · 不上傳</div>
     </div>
   </header>
