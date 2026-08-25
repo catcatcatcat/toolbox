@@ -148,6 +148,8 @@
   .field:first-of-type { margin-top: 0; }
   .field > span, .field-label { color: var(--ink-2); font-size: 12px; font-weight: 600; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* 同列各欄不再被 .field 的 margin-top 錯開，控制項一律拉齊到同高 */
+  .field-row > .field { margin-top: 0; grid-template-rows: auto 1fr; }
   input[type="text"], input[type="date"], input[type="number"], select, textarea {
     width: 100%;
     min-height: 40px;
@@ -235,7 +237,8 @@
   }
   .doc-lead { margin: 0 0 4mm; }
   .doc-lead .fill { font-weight: 600; }
-  .fill { display: inline-block; min-width: 22mm; border-bottom: 1px solid #16161a; padding: 0 2mm; text-align: center; }
+  .fill { display: inline-block; padding: 0 1mm; }
+  .fill.blank { min-width: 22mm; border-bottom: 1px solid #16161a; padding: 0 2mm; text-align: center; }
   .fill.blank::after { content: "\00a0"; }
 
   .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 3.4mm; }
