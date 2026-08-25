@@ -167,6 +167,18 @@
     font-size: 13px;
   }
   .check input { margin: 3px 0 0; accent-color: var(--pink); }
+  .radio-row { display: flex; flex-wrap: wrap; gap: 20px; }
+  .radio-row .check { margin-top: 0; align-items: center; }
+  .req-tag {
+    margin-left: 7px;
+    padding: 1px 6px;
+    background: var(--pink);
+    color: var(--ground);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+  }
+  input.warn { border-color: var(--pink); box-shadow: inset 0 0 0 1px var(--pink); }
   .hint { margin: 9px 0 0; color: var(--ink-2); font-size: 12px; }
   .hint.warn { color: var(--pink); }
   .sub { padding-left: 12px; border-left: 2px solid var(--rule); margin-top: 12px; }
@@ -221,22 +233,22 @@
     text-indent: .5em;
     text-align: center;
   }
-  .doc-lead { margin: 0 0 5mm; }
+  .doc-lead { margin: 0 0 4mm; }
   .doc-lead .fill { font-weight: 600; }
   .fill { display: inline-block; min-width: 22mm; border-bottom: 1px solid #16161a; padding: 0 2mm; text-align: center; }
   .fill.blank::after { content: "\00a0"; }
 
-  .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 4.5mm; }
-  .doc-table th, .doc-table td { border: 1px solid #2a2a30; padding: 2.2mm 3mm; text-align: left; vertical-align: top; }
+  .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 3.4mm; }
+  .doc-table th, .doc-table td { border: 1px solid #2a2a30; padding: 1.7mm 3mm; text-align: left; vertical-align: top; }
   .doc-table th { width: 26mm; background: #f2f1ee; font-weight: 600; white-space: nowrap; }
   .doc-table td.num { font-variant-numeric: tabular-nums; }
-  .doc-caption { margin: 0 0 2mm; font-size: 9.5pt; font-weight: 600; letter-spacing: .04em; }
+  .doc-caption { margin: 0 0 1.5mm; font-size: 9.5pt; font-weight: 600; letter-spacing: .04em; }
   .amount-cn { font-weight: 600; letter-spacing: .04em; }
   .amount-num { font-family: var(--font-mono); }
   .net-row th, .net-row td { background: #f2f1ee; font-weight: 600; }
 
-  .doc-note { margin: 0 0 4mm; color: #46464e; font-size: 9pt; line-height: 1.55; white-space: pre-wrap; }
-  .sign-area { display: flex; justify-content: space-between; align-items: flex-end; gap: 10mm; margin-top: auto; padding-top: 6mm; }
+  .doc-note { margin: 0 0 3mm; color: #46464e; font-size: 9pt; line-height: 1.55; white-space: pre-wrap; }
+  .sign-area { display: flex; justify-content: space-between; align-items: flex-end; gap: 10mm; margin-top: auto; padding-top: 5mm; }
   .sign-box { flex: 1 1 0; }
   .sign-label { margin: 0 0 2mm; font-size: 9.5pt; font-weight: 600; }
   .sign-slot { height: 22mm; border-bottom: 1px solid #16161a; }
@@ -451,6 +463,19 @@
             </select>
           </label>
         </div>
+        <div class="field">
+          <span>付款方式</span>
+          <div class="radio-row">
+            <label class="check">
+              <input type="radio" name="payMethod" value="cash" checked>
+              <span>現金支付</span>
+            </label>
+            <label class="check">
+              <input type="radio" name="payMethod" value="transfer">
+              <span>銀行匯款</span>
+            </label>
+          </div>
+        </div>
         <label class="check">
           <input id="deductOn" type="checkbox">
           <span>列出代扣稅額與實付金額（所得稅、二代健保補充保費）</span>
@@ -481,8 +506,9 @@
           <input id="pId" type="text" maxlength="20" placeholder="例如：A123456789">
         </label>
         <label class="field">
-          <span>戶籍或通訊地址</span>
-          <input id="pAddress" type="text" maxlength="80" placeholder="例如：臺北市中正區…">
+          <span>戶籍地址<em class="req-tag">要到鄰里</em></span>
+          <input id="pAddress" type="text" maxlength="80" placeholder="例如：臺北市中正區水源里5鄰羅斯福路一段2號3樓">
+          <p class="hint" id="addrHint">請填「戶籍地址」並寫到里與鄰（例如「水源里5鄰」）；扣繳憑單申報需要，缺了要另外查。</p>
         </label>
         <div class="field-row">
           <label class="field">
@@ -498,10 +524,7 @@
 
       <div class="section">
         <h2 class="section-title"><span>匯款資料</span><span class="step">04 / BANK</span></h2>
-        <label class="check">
-          <input id="bankOn" type="checkbox">
-          <span>在領據上列出匯款帳戶</span>
-        </label>
+        <p class="hint" id="bankHint">付款方式選「銀行匯款」後，這裡填的帳戶會印在領據上。</p>
         <div class="sub" id="bankFields" hidden>
           <div class="field-row">
             <label class="field">
@@ -580,6 +603,7 @@
               <tbody>
                 <tr id="rReason"><th>事由</th><td id="oReason"></td></tr>
                 <tr id="rAmount"><th>金額</th><td id="oAmount" class="num"></td></tr>
+                <tr id="rPay"><th>付款方式</th><td id="oPay"></td></tr>
               </tbody>
             </table>
 
@@ -600,7 +624,7 @@
               <tbody>
                 <tr id="rName"><th>姓名</th><td id="oName"></td></tr>
                 <tr id="rId"><th>身分證字號</th><td id="oId"></td></tr>
-                <tr id="rAddress"><th>地址</th><td id="oAddress"></td></tr>
+                <tr id="rAddress"><th>戶籍地址</th><td id="oAddress"></td></tr>
                 <tr id="rPhone"><th>電話</th><td id="oPhone"></td></tr>
                 <tr id="rEmail"><th>Email</th><td id="oEmail"></td></tr>
               </tbody>
@@ -610,7 +634,8 @@
               <p class="doc-caption">匯款資料</p>
               <table class="doc-table">
                 <tbody>
-                  <tr id="rBank"><th>銀行／分行</th><td id="oBank"></td></tr>
+                  <tr id="rBank"><th>銀行</th><td id="oBank"></td></tr>
+                  <tr id="rBranch"><th>分行</th><td id="oBranch"></td></tr>
                   <tr id="rAccount"><th>帳號</th><td id="oAccount" class="num"></td></tr>
                   <tr id="rHolder"><th>戶名</th><td id="oHolder"></td></tr>
                 </tbody>
@@ -677,7 +702,7 @@
     { id: 'pAddress', kind: 'value' },
     { id: 'pPhone', kind: 'value' },
     { id: 'pEmail', kind: 'value' },
-    { id: 'bankOn', kind: 'check', keep: true },
+    { id: 'payMethod', kind: 'radio', name: 'payMethod', keep: true },
     { id: 'bBank', kind: 'value' },
     { id: 'bBranch', kind: 'value' },
     { id: 'bAccount', kind: 'value' },
@@ -689,8 +714,7 @@
 
   const defaults = {};
   FIELDS.forEach((f) => {
-    const el = $(f.id);
-    defaults[f.id] = f.kind === 'check' ? el.checked : el.value;
+    defaults[f.id] = fieldValue(f);
   });
 
   /* ---------- 金額轉國字大寫 ---------- */
@@ -734,21 +758,37 @@
 
   /* ---------- 讀寫狀態 ---------- */
 
+  function radios(f) {
+    return Array.from(document.querySelectorAll('input[name="' + f.name + '"]'));
+  }
+
+  function fieldValue(f) {
+    if (f.kind === 'radio') {
+      const on = radios(f).find((r) => r.checked);
+      return on ? on.value : '';
+    }
+    const el = $(f.id);
+    return f.kind === 'check' ? el.checked : el.value;
+  }
+
   function readForm() {
     const s = {};
-    FIELDS.forEach((f) => {
-      const el = $(f.id);
-      s[f.id] = f.kind === 'check' ? el.checked : el.value;
-    });
+    FIELDS.forEach((f) => { s[f.id] = fieldValue(f); });
     return s;
   }
 
   function applyState(s) {
     FIELDS.forEach((f) => {
       if (!(f.id in s)) return;
+      const v = s[f.id] == null ? '' : String(s[f.id]);
+      if (f.kind === 'radio') {
+        // 連結內容可能被改壞，只接受既有選項
+        const hit = radios(f).find((r) => r.value === v);
+        if (hit) hit.checked = true;
+        return;
+      }
       const el = $(f.id);
       if (f.kind === 'check') { el.checked = !!s[f.id]; return; }
-      const v = s[f.id] == null ? '' : String(s[f.id]);
       // 連結內容可能被改壞，下拉選單只接受既有選項
       if (el.tagName === 'SELECT' && !Array.from(el.options).some((o) => o.value === v)) return;
       el.value = v;
@@ -862,6 +902,30 @@
     if (!text) cell.innerHTML = '<span class="fill blank"></span>';
   }
 
+  /* 戶籍地址必須詳細到鄰里，扣繳憑單申報要用；缺了就當場提示，不擋列印 */
+  const ADDR_OK = '請填「戶籍地址」並寫到里與鄰（例如「水源里5鄰」）；扣繳憑單申報需要，缺了要另外查。';
+
+  function addressGaps(value) {
+    const text = (value || '').trim();
+    if (!text) return ['尚未填寫'];
+    const gaps = [];
+    if (!/里/.test(text)) gaps.push('里');
+    if (!/鄰/.test(text)) gaps.push('鄰');
+    return gaps;
+  }
+
+  function checkAddress(value) {
+    const text = (value || '').trim();
+    const gaps = addressGaps(value);
+    const hint = $('addrHint');
+    const bad = !!text && gaps.length > 0;
+    $('pAddress').classList.toggle('warn', bad);
+    hint.classList.toggle('warn', bad);
+    hint.textContent = bad
+      ? '這個地址還少了「' + gaps.join('」與「') + '」。戶籍地址要寫到鄰里才不用另外查，例如「臺北市中正區水源里5鄰羅斯福路一段2號3樓」。'
+      : ADDR_OK;
+  }
+
   function formatDate(value, era) {
     if (!value) return '';
     const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
@@ -929,14 +993,18 @@
     setRow('rName', 'oName', s.pName, showEmpty);
     setRow('rId', 'oId', s.pId, showEmpty);
     setRow('rAddress', 'oAddress', s.pAddress, showEmpty);
+    checkAddress(s.pAddress);
     setRow('rPhone', 'oPhone', s.pPhone, showEmpty);
     setRow('rEmail', 'oEmail', s.pEmail, showEmpty);
 
-    $('bankFields').hidden = !s.bankOn;
-    $('oBankBlock').hidden = !s.bankOn;
-    if (s.bankOn) {
-      const bank = [s.bBank, s.bBranch].map((v) => (v || '').trim()).filter(Boolean).join(' ');
-      setRow('rBank', 'oBank', bank, showEmpty);
+    const byTransfer = s.payMethod === 'transfer';
+    $('oPay').textContent = byTransfer ? '銀行匯款' : '現金支付';
+    $('bankFields').hidden = !byTransfer;
+    $('bankHint').hidden = byTransfer;
+    $('oBankBlock').hidden = !byTransfer;
+    if (byTransfer) {
+      setRow('rBank', 'oBank', s.bBank, showEmpty);
+      setRow('rBranch', 'oBranch', s.bBranch, showEmpty);
       setRow('rAccount', 'oAccount', s.bAccount, showEmpty);
       setRow('rHolder', 'oHolder', s.bHolder, showEmpty);
     }
@@ -994,13 +1062,18 @@
   /* ---------- 事件 ---------- */
 
   FIELDS.forEach((f) => {
-    const el = $(f.id);
-    el.addEventListener('input', render);
-    el.addEventListener('change', render);
+    const els = f.kind === 'radio' ? radios(f) : [$(f.id)];
+    els.forEach((el) => {
+      el.addEventListener('input', render);
+      el.addEventListener('change', render);
+    });
   });
 
   $('printBtn').addEventListener('click', () => {
-    $('status').textContent = '在列印對話框選「儲存為 PDF」就能存檔。';
+    const gaps = addressGaps($('pAddress').value);
+    $('status').textContent = gaps.length
+      ? '提醒：戶籍地址還少了「' + gaps.join('」與「') + '」，列印前可以補上。在列印對話框選「儲存為 PDF」就能存檔。'
+      : '在列印對話框選「儲存為 PDF」就能存檔。';
     window.print();
   });
 
