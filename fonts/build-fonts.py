@@ -35,7 +35,8 @@ PAGES = [os.path.join(ROOT, 'index.html'),
          os.path.join(ROOT, 'zine-fold', 'index.html'),
          os.path.join(ROOT, 'id-photo-sheet', 'index.html'),
          os.path.join(ROOT, 'budget-quest', 'index.html'),
-         os.path.join(ROOT, 'receipt-maker', 'index.html')]
+         os.path.join(ROOT, 'receipt-maker', 'index.html'),
+         os.path.join(ROOT, 'speaker-timer', 'index.html')]
 
 CSS_URL = ('https://fonts.googleapis.com/css2'
            '?family=Archivo:wght@500;600;700'
